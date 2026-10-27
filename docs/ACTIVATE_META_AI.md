@@ -41,7 +41,25 @@ OPEN_WEIGHT_HOST_LABEL=Fireworks
 ```
 
 If the host's model id contains neither "muse-spark-open" nor "llama" (e.g. a custom Baseten deployment name), add the exact id to
-`AI_EXTRA_ALLOWED_MODELS`. Non-Meta models are always refused.
+`AI_EXTRA_ALLOWED_MODELS`. Non-Meta models are refused unless explicitly enabled as a labelled development stand-in.
+
+## Route C: GroqCloud (free tier, Meta model only if your account has access)
+
+1. Owner creates a key at console.groq.com/keys. Groq documents a free plan; check its current terms.
+2. Set `AI_MODE=groq`, `GROQ_API_KEY`, `AI_CONNECTION_TEST_TOKEN`. Leave `GROQ_MODEL` empty at first.
+3. Overview → AI provider → **List available Meta models**. This is free and spends no tokens.
+4. If a Meta model is listed (e.g. `meta-models/muse-spark-open` after Groq approves preview access), set `GROQ_MODEL` to it,
+   restart, then **Test live connection**. If no Meta model is listed, Groq cannot serve this demo yet.
+
+## Route D: OpenRouter (free `:free` models only, by default)
+
+1. Owner creates a key at openrouter.ai/keys.
+2. Set `AI_MODE=openrouter`, `OPENROUTER_API_KEY`, `AI_CONNECTION_TEST_TOKEN`, then press **List available Meta models**.
+3. If a Meta model is shown as **free**, set `OPENROUTER_MODEL` to that exact id (ending in `:free`).
+   Paid ids such as `meta/muse-spark-open` are refused unless `OPENROUTER_FREE_ONLY=false`. Set that only after approving spend.
+
+Before relying on Groq or OpenRouter for judging, confirm with the organisers that a Meta open-weight model served there meets the
+official rules. See `docs/AI_PROVIDERS.md`.
 
 ## Settings to tune once a live endpoint is known
 

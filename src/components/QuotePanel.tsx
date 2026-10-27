@@ -145,7 +145,7 @@ export function QuotePanel({ enquiry, onError }: { enquiry: Enquiry; onError: (e
             <Button variant="secondary" className="px-2.5 py-1 text-xs" onClick={copy}>{copied ? "✔ Copied" : "📋 Copy"}</Button>
           </div>
         </div>
-        {intro && <div className="mb-2"><SourceTag source={intro.source} label={intro.label} model={intro.model} fallbackReason={intro.fallbackReason} /></div>}
+        {intro && <div className="mb-2"><SourceTag source={intro.source} label={intro.label} model={intro.model} modelClass={intro.modelClass} fallbackReason={intro.fallbackReason} /></div>}
         <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-xl bg-[#d9fdd3] p-3 font-sans text-[13px] leading-relaxed text-slate-800 shadow-sm">{text}</pre>
         <p className="mt-1 text-[11px] text-slate-500">AI may only write the greeting. All figures come from the validated quote.</p>
       </div>

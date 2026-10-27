@@ -99,26 +99,34 @@ export function Notice({ tone = "amber", children }: { tone?: "amber" | "red" | 
 }
 
 /**
- * Labels where an AI-generated piece of text came from. "Live Meta" appears
- * ONLY for a response that actually came back from a Meta model call.
+ * Labels where an AI-generated piece of text came from. "Live Meta AI" appears
+ * ONLY for a response that actually came back from an eligible Meta model.
+ * A non-Meta development model is labelled as such and never as Meta AI.
  */
 export function SourceTag({
   source,
   label,
   model,
+  modelClass,
   fallbackReason,
 }: {
-  source: "simulation" | "meta" | "manual";
+  source: "simulation" | "meta" | "dev-model" | "manual";
   label?: string;
   model?: string | null;
+  modelClass?: "meta-model-api" | "meta-open-weight" | "non-meta-dev";
   fallbackReason?: string;
 }) {
+  const m = model ? ` · ${model.split("/").pop()}` : "";
   return (
     <span className="inline-flex flex-wrap items-center gap-1">
       {source === "meta" ? (
         <Badge tone="blue" className="ring-1 ring-sky-300">
-          ✓ Live Meta AI · {label ?? "Meta"}
-          {model ? ` · ${model.split("/").pop()}` : ""}
+          ✓ Live Meta AI{modelClass === "meta-open-weight" ? " (open-weight)" : ""} · {label ?? "Meta"}
+          {m}
+        </Badge>
+      ) : source === "dev-model" ? (
+        <Badge tone="violet" className="ring-1 ring-violet-300">
+          DEV MODEL · not Meta AI · not hackathon-eligible{m}
         </Badge>
       ) : source === "simulation" ? (
         <Badge tone="amber">SIMULATION · not Meta AI</Badge>

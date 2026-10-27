@@ -4,10 +4,11 @@ import { AIProviderError } from "./errors";
 import type { ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, InterpretContext, LiveCallMeta, ProviderInfo } from "./types";
 
 /**
- * Live Meta model provider for both:
- *  - Meta Model API (hosted Muse Spark, e.g. muse-spark-1.3), and
- *  - Meta open-weight models (e.g. Muse Spark Open, Llama) on approved
- *    OpenAI-compatible hosts such as Fireworks, Baseten, Modal or Together.
+ * Live model provider behind the switchboard, for:
+ *  - Meta Model API (hosted Muse Spark, e.g. muse-spark-1.3),
+ *  - Meta open-weight models (e.g. Muse Spark Open, Llama) on GroqCloud,
+ *    OpenRouter or other OpenAI-compatible hosts, and
+ *  - an explicitly enabled NON-Meta development stand-in (labelled as such).
  *
  * Status: tested with mocked HTTP only — no live credentials yet.
  */
@@ -18,7 +19,8 @@ export class MetaAIProvider implements HospitalityAIProvider {
   lastCall?: LiveCallMeta;
 
   constructor(cfg: LiveAIConfig, deps: { fetchImpl?: typeof fetch; sleep?: (ms: number) => Promise<void> } = {}) {
-    this.info = { kind: "meta", id: cfg.provider, label: cfg.label, model: cfg.model, host: cfg.hostLabel };
+    const modelClass = cfg.modelClass ?? (cfg.provider === "meta-model-api" ? "meta-model-api" : "meta-open-weight");
+    this.info = { kind: modelClass === "non-meta-dev" ? "dev-model" : "meta", id: cfg.provider, label: cfg.label, model: cfg.model, host: cfg.hostLabel, modelClass };
     this.client = {
       baseUrl: cfg.baseUrl,
       apiKey: cfg.apiKey,
@@ -27,6 +29,7 @@ export class MetaAIProvider implements HospitalityAIProvider {
       maxRetries: cfg.maxRetries,
       maxOutputTokens: cfg.maxOutputTokens,
       jsonMode: cfg.jsonMode,
+      headers: cfg.headers,
       fetchImpl: deps.fetchImpl,
       sleep: deps.sleep,
     };

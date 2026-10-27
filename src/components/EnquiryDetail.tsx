@@ -125,7 +125,7 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
           </div>
           {interp && (
             <div className="mb-3 space-y-2">
-              <SourceTag source={interp.source} label={interp.label} model={interp.model} fallbackReason={interp.fallbackReason} />
+              <SourceTag source={interp.source} label={interp.label} model={interp.model} modelClass={interp.modelClass} fallbackReason={interp.fallbackReason} />
               {interp.data.check.missing.length > 0 && (
                 <Notice>Missing: {interp.data.check.missing.join(", ")} — ask the guest or fill in below.</Notice>
               )}

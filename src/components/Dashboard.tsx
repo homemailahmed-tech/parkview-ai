@@ -22,9 +22,10 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 
 export interface AIStatus {
   ai: {
-    kind: "simulation" | "meta";
-    provider: "simulation" | "meta-model-api" | "open-weight";
+    kind: "simulation" | "meta" | "dev-model";
+    provider: "simulation" | "meta-model-api" | "groq" | "openrouter" | "open-weight";
     label: string;
+    modelClass: "meta-model-api" | "meta-open-weight" | "non-meta-dev" | null;
     model: string | null;
     host: string | null;
     jsonMode: string | null;
@@ -163,6 +164,13 @@ function RoleSwitch({ compact }: { compact?: boolean }) {
 
 function AIModeBadge({ status }: { status: AIStatus | null }) {
   if (!status) return <Badge>AI status…</Badge>;
+  if (status.ai.kind === "dev-model") {
+    return (
+      <Badge tone="violet" className="max-w-[9rem] truncate sm:max-w-[18rem]">
+        <span title="A non-Meta development model is configured — not hackathon-eligible">DEV model · not Meta</span>
+      </Badge>
+    );
+  }
   return status.ai.kind === "meta" ? (
     <Badge tone="blue" className="max-w-[9rem] truncate sm:max-w-[18rem]">
       <span title="Configured. Each AI response shows whether it really came from Meta.">

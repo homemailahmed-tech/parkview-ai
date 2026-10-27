@@ -24,7 +24,7 @@ Built for the Meta Global AI Developer Hackathon 2026.
 npm install
 cp .env.example .env.local   # optional — defaults to simulation mode
 npm run dev                  # http://localhost:3000
-npm test                     # 106 automated tests
+npm test                     # 125 automated tests
 npm run typecheck
 npm run build
 ```
@@ -96,20 +96,28 @@ nearby check-in dates. If still impossible, it explains why.
 
 ## Meta AI integration
 
-The language layer supports **both** eligible Meta routes through one provider (`src/lib/ai/metaProvider.ts`):
+The language layer is a **provider switchboard** (`src/lib/ai/config.ts`). All providers share one client and the same validation:
 
 | `AI_MODE` | Route | Defaults |
 | --- | --- | --- |
 | `simulation` *(default)* | Rule-based stand-in, always labelled **SIMULATION · not Meta AI** | — |
-| `meta-model-api` | Meta's hosted **Meta Model API** (Chat Completions) | `https://api.meta.ai/v1`, `muse-spark-1.3` |
-| `open-weight` | A **Meta open-weight** model (e.g. Muse Spark Open, Llama) on an approved OpenAI-compatible host (Fireworks, Baseten, Modal, Together) | set base URL + model |
+| `meta-model-api` | Meta's hosted **Meta Model API**, the hackathon's primary route | `https://api.meta.ai/v1`, `muse-spark-1.3` |
+| `groq` | **GroqCloud**, using a Meta model your account can access | `https://api.groq.com/openai/v1`, no default model |
+| `openrouter` | **OpenRouter**, free-only (`:free` ids) unless paid use is approved | `https://openrouter.ai/api/v1`, no default model |
+| `open-weight` | Any other OpenAI-compatible host (Fireworks, Baseten, Modal, Together) | set base URL and model |
+
+See **[`docs/AI_PROVIDERS.md`](docs/AI_PROVIDERS.md)** for the verified endpoints, model ids, prices and eligibility notes.
+In October 2026 no Meta model was verified as both free and generally available on Groq or OpenRouter.
+The owner-only **List available Meta models** button checks the account's live catalogue for free.
 
 Request format follows Meta's Chat Completions docs (`dev.meta.ai/docs/protocols/chat-completions`): `POST {base}/chat/completions`,
 `Authorization: Bearer <key>`. Meta's docs do not yet confirm JSON mode (`response_format`) on the hosted API, so `AI_JSON_MODE=auto`
 asks for it and retries once without it if rejected. Prompting and deterministic validation enforce JSON either way.
 
-**Model eligibility:** Muse Spark, Muse Spark Open and Llama ids are accepted, plus exact ids listed in `AI_EXTRA_ALLOWED_MODELS`.
-Non-Meta families (Claude, GPT, Gemini, Mistral, Qwen, DeepSeek, …) are always refused.
+**Model eligibility:** each model is classed as **Meta Model API**, **Meta open-weight** or **non-Meta development**.
+Muse Spark, Muse Spark Open and Llama ids are accepted as Meta models, as are exact ids in `AI_EXTRA_ALLOWED_MODELS`.
+Non-Meta models (GPT, Gemini, Qwen and others) are refused unless `AI_ALLOW_NON_META_DEV_MODEL=true`.
+In that case their output is labelled **DEV MODEL · not Meta AI · not hackathon-eligible** and never shown as Meta AI.
 
 **Reliability and safety:**
 - request timeout
@@ -143,9 +151,10 @@ Halaal eateries and events are *fictional placeholders*. The guest house locatio
 
 ## Testing
 
-`npm test` runs 106 tests across: room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
+`npm test` runs 125 tests across: room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
 conflicting bookings, quotation totals & tamper detection, owner-approval and payment guards, invalid/missing enquiry information,
-Meta AI providers (config, eligibility, mocked success/failure modes, budget, connection test), API routes (no key leakage),
+Meta AI providers and switchboard (Meta Model API, Groq, OpenRouter, open-weight: config, model classes, mocked success/failure modes,
+free-only guard, catalogue check, budget, connection test), API routes (no key leakage), secret hygiene,
 and Smart Maps (labelling, billing gate, concierge, tile/places/routing failures).
 
 See [`docs/DEMO_PLAN.md`](docs/DEMO_PLAN.md) for the demo script and roadmap, and [`docs/DEPLOYMENT_PLAN.md`](docs/DEPLOYMENT_PLAN.md) for a phone-accessible demo deployment plan (not yet deployed).

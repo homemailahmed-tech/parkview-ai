@@ -175,7 +175,7 @@ export function SmartMapsView({ status }: { status: AIStatus | null }) {
             {answer && (
               <div className="mt-3 space-y-2">
                 <div className="flex flex-wrap items-center gap-1">
-                  <SourceTag source={answer.intent.source} label={answer.intent.label} model={answer.intent.model} fallbackReason={answer.intent.fallbackReason} />
+                  <SourceTag source={answer.intent.source} label={answer.intent.label} model={answer.intent.model} modelClass={answer.intent.modelClass} fallbackReason={answer.intent.fallbackReason} />
                   <Badge>{answer.placesSource === "sample" ? "Sample places" : answer.placesSource}</Badge>
                 </div>
                 <p className="text-sm text-slate-700">{answer.intent.data.summary}</p>

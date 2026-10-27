@@ -224,5 +224,5 @@ export interface Enquiry {
   payment?: PaymentRecord;
   events: WorkflowEvent[];
   /** How the enquiry was interpreted, for transparency in the UI. */
-  interpretedBy?: "simulation" | "meta" | "manual";
+  interpretedBy?: "simulation" | "meta" | "dev-model" | "manual";
 }

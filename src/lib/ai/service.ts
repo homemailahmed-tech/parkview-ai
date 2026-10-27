@@ -50,7 +50,7 @@ async function withFallback<T>(sel: ProviderSelection, run: (p: HospitalityAIPro
   try {
     const data = await run(p);
     const call = p instanceof MetaAIProvider ? p.lastCall : undefined;
-    return { source: "meta", provider: p.info.id, label: p.info.label, model: call?.servedModel ?? p.info.model, data, call };
+    return { source: p.info.kind, provider: p.info.id, modelClass: p.info.modelClass, label: p.info.label, model: call?.servedModel ?? p.info.model, data, call };
   } catch (e) {
     return {
       ...sim(),

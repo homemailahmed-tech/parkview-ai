@@ -14,6 +14,7 @@ export async function GET() {
       kind: sel.primary.info.kind,
       provider: sel.primary.info.id,
       label: sel.primary.info.label,
+      modelClass: sel.primary.info.modelClass ?? null,
       model: sel.primary.info.model ?? null,
       host: live?.hostLabel ?? null,
       jsonMode: live?.jsonMode ?? null,

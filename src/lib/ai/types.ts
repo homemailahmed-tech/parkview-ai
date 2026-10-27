@@ -7,8 +7,13 @@ import type { AllocationOption, ISODate } from "../domain/types";
  * explaining options and drafting friendly wording. Prices, capacities,
  * availability and booking decisions always come from deterministic code.
  */
-export type ProviderKind = "simulation" | "meta";
-export type ProviderId = "simulation" | "meta-model-api" | "open-weight";
+/**
+ * "meta"      — a live response from an eligible Meta model.
+ * "dev-model" — a live response from a NON-Meta development stand-in (never shown as Meta AI).
+ * "simulation" — rule-based, no model at all.
+ */
+export type ProviderKind = "simulation" | "meta" | "dev-model";
+export type ProviderId = "simulation" | "meta-model-api" | "groq" | "openrouter" | "open-weight";
 
 export interface ProviderInfo {
   kind: ProviderKind;
@@ -17,6 +22,7 @@ export interface ProviderInfo {
   label: string;
   model?: string;
   host?: string;
+  modelClass?: "meta-model-api" | "meta-open-weight" | "non-meta-dev";
 }
 
 /** Evidence that a response really came from a live Meta model call. */
@@ -68,9 +74,10 @@ export interface HospitalityAIProvider {
 }
 
 export interface AIResult<T> {
-  /** "meta" ONLY when this exact response came from a successful live Meta model call. */
+  /** "meta" ONLY when this exact response came from a successful live call to an eligible Meta model. */
   source: ProviderKind;
   provider: ProviderId;
+  modelClass?: "meta-model-api" | "meta-open-weight" | "non-meta-dev";
   label: string;
   model?: string;
   data: T;

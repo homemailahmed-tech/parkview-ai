@@ -2,8 +2,10 @@ import { AIProviderError, errorFromStatus } from "./errors";
 
 /**
  * Minimal Chat Completions client for OpenAI-compatible endpoints:
- * Meta Model API (https://api.meta.ai/v1, per dev.meta.ai/docs/protocols/chat-completions)
- * and open-weight hosts (Fireworks, Baseten, Modal, Together, …).
+ * Meta Model API (https://api.meta.ai/v1, per dev.meta.ai/docs/protocols/chat-completions),
+ * GroqCloud (https://api.groq.com/openai/v1), OpenRouter (https://openrouter.ai/api/v1)
+ * and other open-weight hosts (Fireworks, Baseten, Modal, Together, …).
+ * Only standard fields are sent (no logprobs/logit_bias/n, which Groq rejects).
  *
  * Hardening: request timeout, bounded retries with backoff for 429/5xx/
  * timeouts/network errors, and a JSON-mode fallback because `response_format`
@@ -19,6 +21,8 @@ export interface ChatClientConfig {
   maxRetries: number;
   maxOutputTokens: number;
   jsonMode: JsonMode;
+  /** Extra non-secret headers, e.g. OpenRouter app attribution. */
+  headers?: Record<string, string>;
   fetchImpl?: typeof fetch;
   /** Injectable for tests. */
   sleep?: (ms: number) => Promise<void>;
@@ -79,7 +83,7 @@ async function post(cfg: ChatClientConfig, body: Record<string, unknown>): Promi
   try {
     res = await doFetch(`${cfg.baseUrl.replace(/\/+$/, "")}/chat/completions`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.apiKey}` },
+      headers: { ...cfg.headers, "Content-Type": "application/json", Authorization: `Bearer ${cfg.apiKey}` },
       body: JSON.stringify(body),
       signal: controller.signal,
     });
