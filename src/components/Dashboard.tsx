@@ -21,7 +21,18 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 ];
 
 export interface AIStatus {
-  ai: { kind: "simulation" | "meta"; label: string; model: string | null; configIssue: string | null };
+  ai: {
+    kind: "simulation" | "meta";
+    provider: "simulation" | "meta-model-api" | "open-weight";
+    label: string;
+    model: string | null;
+    host: string | null;
+    jsonMode: string | null;
+    configIssue: string | null;
+    warnings: string[];
+    liveCallsRemainingToday: number | null;
+    connectionTestEnabled: boolean;
+  };
   maps: { places: string; routing: string; notes: string[] };
 }
 
@@ -92,7 +103,7 @@ export function Dashboard() {
         </header>
 
         <main className="min-w-0 flex-1 px-4 pb-28 pt-4 md:px-6 md:pb-10">
-          {tab === "overview" && <Overview onOpen={open} onTab={setTab} />}
+          {tab === "overview" && <Overview onOpen={open} onTab={setTab} status={status} />}
           {tab === "inbox" && <Inbox selected={selected} onSelect={setSelected} />}
           {tab === "quotes" && <Pipeline onOpen={open} />}
           {tab === "rooms" && <Inventory />}
@@ -153,7 +164,12 @@ function RoleSwitch({ compact }: { compact?: boolean }) {
 function AIModeBadge({ status }: { status: AIStatus | null }) {
   if (!status) return <Badge>AI status…</Badge>;
   return status.ai.kind === "meta" ? (
-    <Badge tone="blue" className="max-w-[9rem] truncate sm:max-w-[16rem]">🦙 {status.ai.label}</Badge>
+    <Badge tone="blue" className="max-w-[9rem] truncate sm:max-w-[18rem]">
+      <span title="Configured. Each AI response shows whether it really came from Meta.">
+        Ⓜ <span className="sm:hidden">Meta AI</span>
+        <span className="hidden sm:inline">{status.ai.label} · {status.ai.model?.split("/").pop()}</span>
+      </span>
+    </Badge>
   ) : (
     <Badge tone="amber" className="max-w-[14rem] truncate" >
       <span title={status.ai.configIssue ?? "Set AI_MODE=meta with Meta Llama credentials to enable live AI"}>

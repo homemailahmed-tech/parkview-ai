@@ -6,9 +6,10 @@ import { formatMoney } from "@/lib/domain/money";
 import { PIPELINE, STATUS_LABEL } from "@/lib/workflow/stateMachine";
 import { useStore } from "./store";
 import { Badge, Card, SectionTitle, StatusPill } from "./ui";
-import type { Tab } from "./Dashboard";
+import type { AIStatus, Tab } from "./Dashboard";
+import { AIStatusPanel } from "./AIStatusPanel";
 
-export function Overview({ onOpen, onTab }: { onOpen: (id: string) => void; onTab: (t: Tab) => void }) {
+export function Overview({ onOpen, onTab, status }: { onOpen: (id: string) => void; onTab: (t: Tab) => void; status: AIStatus | null }) {
   const { enquiries, bookings, today, role } = useStore();
   const tonight = bookings.filter((b) => rangesOverlap(b.checkIn, b.checkOut, today, addDays(today, 1)));
   const occupiedRooms = new Set(tonight.filter((b) => b.kind === "booking").map((b) => b.roomId)).size;
@@ -97,6 +98,7 @@ export function Overview({ onOpen, onTab }: { onOpen: (id: string) => void; onTa
           </div>
         </Card>
       </div>
+      <AIStatusPanel status={status} />
     </div>
   );
 }

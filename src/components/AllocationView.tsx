@@ -111,7 +111,7 @@ export function AllocationView({
       </div>
       {explanation && (
         <div className="mt-3 rounded-xl border border-sky-100 bg-sky-50/60 p-3 text-sm text-slate-700">
-          <div className="mb-1"><SourceTag source={explanation.source} model={explanation.model} fallbackReason={explanation.fallbackReason} /></div>
+          <div className="mb-1"><SourceTag source={explanation.source} label={explanation.label} model={explanation.model} fallbackReason={explanation.fallbackReason} /></div>
           <p className="whitespace-pre-wrap">{explanation.data}</p>
         </div>
       )}

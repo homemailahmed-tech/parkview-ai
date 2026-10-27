@@ -7,7 +7,7 @@ import type { ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, I
  * without credentials. Clearly labelled in the UI; never presented as Meta AI.
  */
 export class SimulationProvider implements HospitalityAIProvider {
-  readonly info = { kind: "simulation" as const, label: "Simulation mode (rule-based, not AI)" };
+  readonly info = { kind: "simulation" as const, id: "simulation" as const, label: "Simulation mode (rule-based, not AI)" };
 
   async interpretEnquiry(text: string, ctx: InterpretContext): Promise<unknown> {
     return simulateExtraction(text, ctx.today);

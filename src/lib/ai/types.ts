@@ -8,14 +8,24 @@ import type { AllocationOption, ISODate } from "../domain/types";
  * availability and booking decisions always come from deterministic code.
  */
 export type ProviderKind = "simulation" | "meta";
+export type ProviderId = "simulation" | "meta-model-api" | "open-weight";
 
 export interface ProviderInfo {
   kind: ProviderKind;
-  /** e.g. "Simulation (rule-based, not AI)" or "Meta Llama via Fireworks". */
+  id: ProviderId;
+  /** e.g. "Simulation mode (rule-based, not AI)", "Meta Model API" or "Meta open-weight via Fireworks". */
   label: string;
   model?: string;
-  /** True only after a live call has actually succeeded in this process. */
-  verified?: boolean;
+  host?: string;
+}
+
+/** Evidence that a response really came from a live Meta model call. */
+export interface LiveCallMeta {
+  responseId?: string;
+  /** Model name reported by the server, if any. */
+  servedModel?: string;
+  latencyMs: number;
+  attempts: number;
 }
 
 export interface InterpretContext {
@@ -58,10 +68,14 @@ export interface HospitalityAIProvider {
 }
 
 export interface AIResult<T> {
+  /** "meta" ONLY when this exact response came from a successful live Meta model call. */
   source: ProviderKind;
+  provider: ProviderId;
   label: string;
   model?: string;
   data: T;
-  /** Set when a live Meta call failed and the simulator answered instead. */
+  /** Present only for live Meta responses. */
+  call?: LiveCallMeta;
+  /** Set when a live Meta call failed (or was not configured) and the simulator answered instead. */
   fallbackReason?: string;
 }

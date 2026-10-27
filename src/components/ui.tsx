@@ -98,12 +98,28 @@ export function Notice({ tone = "amber", children }: { tone?: "amber" | "red" | 
   return <div className={cx("rounded-xl border px-3 py-2 text-sm", tones[tone])}>{children}</div>;
 }
 
-/** Labels where an AI-generated piece of text came from — Meta model vs simulation. */
-export function SourceTag({ source, model, fallbackReason }: { source: "simulation" | "meta" | "manual"; model?: string | null; fallbackReason?: string }) {
+/**
+ * Labels where an AI-generated piece of text came from. "Live Meta" appears
+ * ONLY for a response that actually came back from a Meta model call.
+ */
+export function SourceTag({
+  source,
+  label,
+  model,
+  fallbackReason,
+}: {
+  source: "simulation" | "meta" | "manual";
+  label?: string;
+  model?: string | null;
+  fallbackReason?: string;
+}) {
   return (
     <span className="inline-flex flex-wrap items-center gap-1">
       {source === "meta" ? (
-        <Badge tone="blue">Meta Llama{model ? ` · ${model.split("/").pop()}` : ""}</Badge>
+        <Badge tone="blue" className="ring-1 ring-sky-300">
+          ✓ Live Meta AI · {label ?? "Meta"}
+          {model ? ` · ${model.split("/").pop()}` : ""}
+        </Badge>
       ) : source === "simulation" ? (
         <Badge tone="amber">SIMULATION · not Meta AI</Badge>
       ) : (

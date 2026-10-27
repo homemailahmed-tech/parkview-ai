@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { interpretConcierge, selectProvider } from "@/lib/ai/service";
-import { recommend } from "@/lib/maps/concierge";
-import { selectMapsProviders } from "@/lib/maps/providers";
+import { fetchPlacesWithFallback, recommend } from "@/lib/maps/concierge";
+import { SamplePlacesProvider, selectMapsProviders } from "@/lib/maps/providers";
 import { CATEGORIES, DEMO_MAP_PROPERTY } from "@/lib/maps/sampleData";
 
 const RADIUS_M = 40_000;
@@ -18,12 +18,12 @@ export async function POST(req: Request) {
   try {
     const intent = await interpretConcierge(selectProvider(), { question: body.question.slice(0, 500), categories: CATEGORIES.map((c) => c.id) });
     const maps = selectMapsProviders();
-    const places = intent.data.categories.length ? await maps.places.nearby(DEMO_MAP_PROPERTY.location, intent.data.categories, RADIUS_M) : [];
+    const found = await fetchPlacesWithFallback(intent.data, DEMO_MAP_PROPERTY.location, RADIUS_M, maps.places, new SamplePlacesProvider());
     return NextResponse.json({
       intent,
-      recommendations: recommend(intent.data, places, DEMO_MAP_PROPERTY.location),
-      placesSource: maps.places.id,
-      notes: maps.notes,
+      recommendations: recommend(intent.data, found.places, DEMO_MAP_PROPERTY.location),
+      placesSource: found.placesSource,
+      notes: [...found.notes, ...maps.notes],
     });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

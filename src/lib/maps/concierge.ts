@@ -106,3 +106,33 @@ export function recommend(intent: ConciergeIntent, places: Place[], origin: LatL
     })
     .slice(0, limit);
 }
+
+export interface ConciergeAnswerParts {
+  places: Place[];
+  placesSource: string;
+  notes: string[];
+}
+
+/**
+ * Fetches places for an intent, falling back to the sample provider when a
+ * live provider fails, so guests still get labelled sample answers.
+ */
+export async function fetchPlacesWithFallback(
+  intent: ConciergeIntent,
+  origin: LatLng,
+  radiusMeters: number,
+  primary: { id: string; nearby(c: LatLng, cats: PlaceCategory[], r: number): Promise<Place[]> },
+  fallback: { id: string; nearby(c: LatLng, cats: PlaceCategory[], r: number): Promise<Place[]> },
+): Promise<ConciergeAnswerParts> {
+  if (!intent.categories.length) return { places: [], placesSource: primary.id, notes: [] };
+  try {
+    return { places: await primary.nearby(origin, intent.categories, radiusMeters), placesSource: primary.id, notes: [] };
+  } catch (e) {
+    if (primary.id === fallback.id) throw e;
+    return {
+      places: await fallback.nearby(origin, intent.categories, radiusMeters),
+      placesSource: fallback.id,
+      notes: [`Live places lookup failed (${(e as Error).message}) — showing labelled sample places instead.`],
+    };
+  }
+}

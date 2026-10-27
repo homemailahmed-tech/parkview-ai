@@ -101,3 +101,31 @@ describe("maps providers", () => {
     expect(out[0].source).toBe("google-places");
   });
 });
+
+describe("mapping failure handling", () => {
+  it("classifies tile health", async () => {
+    const { tileHealth } = await import("@/lib/maps/health");
+    expect(tileHealth(0, 0)).toBe("loading");
+    expect(tileHealth(12, 0)).toBe("ok");
+    expect(tileHealth(0, 6)).toBe("tiles-failed");
+    expect(tileHealth(2, 8)).toBe("degraded");
+    expect(tileHealth(20, 3)).toBe("ok");
+  });
+
+  it("falls back to labelled sample places when the live Places provider fails", async () => {
+    const { fetchPlacesWithFallback } = await import("@/lib/maps/concierge");
+    const broken = { id: "google-places", nearby: async () => { throw new Error("HTTP 403"); } };
+    const r = await fetchPlacesWithFallback({ categories: ["beaches"], withChildren: false, keywords: [], summary: "" }, DEMO_MAP_PROPERTY.location, 40_000, broken, new SamplePlacesProvider());
+    expect(r.placesSource).toBe("sample");
+    expect(r.places.length).toBeGreaterThan(0);
+    expect(r.notes[0]).toMatch(/HTTP 403/);
+  });
+
+  it("Google Routes errors surface instead of inventing a travel time (mocked HTTP)", async () => {
+    const { GoogleRoutesProvider } = await import("@/lib/maps/providers");
+    const f = vi.fn(async () => new Response("denied", { status: 403 })) as unknown as typeof fetch;
+    await expect(new GoogleRoutesProvider("k", f).route(DEMO_MAP_PROPERTY.location, { lat: -29.6, lng: 31.1 }, "driving")).rejects.toThrow(/403/);
+    const empty = vi.fn(async () => new Response(JSON.stringify({ routes: [] }))) as unknown as typeof fetch;
+    expect(await new GoogleRoutesProvider("k", empty).route(DEMO_MAP_PROPERTY.location, { lat: -29.6, lng: 31.1 }, "driving")).toBeNull();
+  });
+});

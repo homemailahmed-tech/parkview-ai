@@ -4,6 +4,10 @@ import { useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 import type { Map as LeafletMap, LayerGroup } from "leaflet";
 import type { CategoryInfo, MapProperty, Place } from "@/lib/maps/types";
+import { tileHealth, type MapHealth } from "@/lib/maps/health";
+
+const OSM_TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 export interface SmartMapProps {
   property: MapProperty;
@@ -11,6 +15,11 @@ export interface SmartMapProps {
   categories: CategoryInfo[];
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
+  /** Reports tile/map failures so the parent can show a notice and a list fallback. */
+  onHealthChange?: (health: MapHealth) => void;
+  /** Swap in a commercial tile provider for production traffic. */
+  tileUrl?: string;
+  tileAttribution?: string;
   className?: string;
 }
 
@@ -19,34 +28,73 @@ export interface SmartMapProps {
  * OpenStreetMap tiles (no API key, no billing). Pass a different `property`
  * and `places` to reuse it for another guest house.
  */
-export function SmartMap({ property, places, categories, selectedId, onSelect, className }: SmartMapProps) {
+export function SmartMap({
+  property,
+  places,
+  categories,
+  selectedId,
+  onSelect,
+  onHealthChange,
+  tileUrl = OSM_TILES,
+  tileAttribution = OSM_ATTRIBUTION,
+  className,
+}: SmartMapProps) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<LeafletMap | null>(null);
   const layer = useRef<LayerGroup | null>(null);
   const L = useRef<typeof import("leaflet") | null>(null);
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+  const onHealthRef = useRef(onHealthChange);
+  onHealthRef.current = onHealthChange;
 
   // Create the map once.
   useEffect(() => {
     let cancelled = false;
-    import("leaflet").then((leaflet) => {
-      if (cancelled || !el.current || map.current) return;
-      L.current = leaflet;
-      const m = leaflet.map(el.current, { zoomControl: true, attributionControl: true }).setView([property.location.lat, property.location.lng], property.zoom);
-      leaflet
-        .tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19,
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        })
-        .addTo(m);
-      layer.current = leaflet.layerGroup().addTo(m);
-      map.current = m;
-      m.on("click", () => onSelectRef.current?.(null));
-      draw();
-    });
+    let resize: ResizeObserver | null = null;
+    let loaded = 0;
+    let errors = 0;
+    let last: MapHealth = "loading";
+    const report = () => {
+      const h = tileHealth(loaded, errors);
+      if (h !== last) {
+        last = h;
+        onHealthRef.current?.(h);
+      }
+    };
+    import("leaflet")
+      .then((leaflet) => {
+        if (cancelled || !el.current || map.current) return;
+        L.current = leaflet;
+        const m = leaflet
+          // Wheel zoom off so page scrolling on laptops doesn't hijack the map; pinch-zoom still works on phones.
+          .map(el.current, { zoomControl: true, attributionControl: true, scrollWheelZoom: false })
+          .setView([property.location.lat, property.location.lng], property.zoom);
+        leaflet
+          .tileLayer(tileUrl, { maxZoom: 19, attribution: tileAttribution })
+          .on("tileload", () => {
+            loaded++;
+            report();
+          })
+          .on("tileerror", () => {
+            errors++;
+            report();
+          })
+          .addTo(m);
+        layer.current = leaflet.layerGroup().addTo(m);
+        map.current = m;
+        m.on("click", () => onSelectRef.current?.(null));
+        // Keep tiles aligned when the container changes size (rotation, tab switches, mobile toolbars).
+        resize = new ResizeObserver(() => m.invalidateSize());
+        resize.observe(el.current);
+        draw();
+      })
+      .catch(() => {
+        if (!cancelled) onHealthRef.current?.("map-failed");
+      });
     return () => {
       cancelled = true;
+      resize?.disconnect();
       map.current?.remove();
       map.current = null;
     };

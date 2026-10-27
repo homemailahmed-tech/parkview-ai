@@ -24,7 +24,7 @@ Built for the Meta Global AI Developer Hackathon 2026.
 npm install
 cp .env.example .env.local   # optional — defaults to simulation mode
 npm run dev                  # http://localhost:3000
-npm test                     # 77 automated tests
+npm test                     # 106 automated tests
 npm run typecheck
 npm run build
 ```
@@ -62,7 +62,7 @@ src/
     quote/                  room-based pricing, totals verification, WhatsApp text
     workflow/               state machine — owner approval + simulated payment guards
     enquiry/                extraction schema + validation, simulated parser
-    ai/                     provider interface, Meta Llama provider, simulation provider, service (fallback + guards)
+    ai/                     provider interface, config + eligibility, Meta provider (Model API & open-weight), chat client, simulation, service (fallback, guards, budget)
     maps/                   Smart Maps types, sample places, geo helpers, concierge, places/routing providers
   app/api/                  server routes (keys stay server-side): ai/status, ai/interpret, ai/explain, ai/draft, concierge, maps/route
   components/               dashboard UI (Tailwind) + reusable SmartMap
@@ -71,7 +71,7 @@ tests/                      vitest suites
 
 ### Guard-rails: what the AI may and may not do
 
-The language model (Meta Llama, or the simulator) is used **only** for language:
+The language model (Meta Muse Spark / Meta open-weight, or the simulator) is used **only** for language:
 interpreting enquiries, explaining options, writing a greeting, and interpreting concierge questions.
 
 Deterministic code owns everything that matters:
@@ -96,19 +96,43 @@ nearby check-in dates. If still impossible, it explains why.
 
 ## Meta AI integration
 
-`src/lib/ai/metaLlamaProvider.ts` calls an **OpenAI-compatible Chat Completions** endpoint — the shape offered by Meta's Llama API
-and by approved open-weight hosts (Fireworks, Together, Baseten/Modal + vLLM). Only model ids containing `llama` are accepted.
+The language layer supports **both** eligible Meta routes through one provider (`src/lib/ai/metaProvider.ts`):
 
-**Status: implemented and unit-tested with mocked HTTP; NOT yet tested against a live endpoint** (no credentials available).
-To enable: set `AI_MODE=meta` and the `META_LLAMA_*` variables in `.env.local`, restart, and check the badge in the top bar
-changes from *Simulation* to *Meta Llama*. If a live call fails, the app falls back to simulation and says so next to the output.
+| `AI_MODE` | Route | Defaults |
+| --- | --- | --- |
+| `simulation` *(default)* | Rule-based stand-in, always labelled **SIMULATION · not Meta AI** | — |
+| `meta-model-api` | Meta's hosted **Meta Model API** (Chat Completions) | `https://api.meta.ai/v1`, `muse-spark-1.3` |
+| `open-weight` | A **Meta open-weight** model (e.g. Muse Spark Open, Llama) on an approved OpenAI-compatible host (Fireworks, Baseten, Modal, Together) | set base URL + model |
 
-Simulation output is always labelled **"SIMULATION · not Meta AI"**. Claude or other non-Meta models are not used as a substitute.
+Request format follows Meta's Chat Completions docs (`dev.meta.ai/docs/protocols/chat-completions`): `POST {base}/chat/completions`,
+`Authorization: Bearer <key>`. Meta's docs do not yet confirm JSON mode (`response_format`) on the hosted API, so `AI_JSON_MODE=auto`
+asks for it and retries once without it if rejected. Prompting and deterministic validation enforce JSON either way.
+
+**Model eligibility:** Muse Spark, Muse Spark Open and Llama ids are accepted, plus exact ids listed in `AI_EXTRA_ALLOWED_MODELS`.
+Non-Meta families (Claude, GPT, Gemini, Mistral, Qwen, DeepSeek, …) are always refused.
+
+**Reliability and safety:**
+- request timeout
+- bounded retries for HTTP 429, 5xx, timeouts and network errors
+- no retry on rejected credentials
+- keys redacted from errors
+- a daily cap on live calls (`AI_DAILY_CALL_LIMIT`)
+- an owner-only connection test, off unless `AI_CONNECTION_TEST_TOKEN` is set
+
+Any failure falls back to simulation with the reason shown next to the output.
+
+**Telling real Meta AI from simulation:** an output is tagged **✓ Live Meta AI · \<route\> · \<model\>** only when that exact response came back
+from a Meta model. The header badge shows what is *configured*. The Overview shows the AI provider panel with configuration issues and warnings.
+
+**Status: implemented and tested with mocked HTTP (success, invalid key, timeout, 429/503, network failure, malformed output, JSON-mode fallback,
+budget cap). Not yet run against a live endpoint — no credentials available.** See [`docs/ACTIVATE_META_AI.md`](docs/ACTIVATE_META_AI.md).
 
 ## AI Smart Maps & Travel Concierge
 
 * `SmartMap` (`src/components/maps/SmartMap.tsx`) is property-agnostic: pass any `MapProperty` and `Place[]` to reuse it.
-* Map tiles: OpenStreetMap (free, attribution shown). For production traffic, switch to a commercial tile provider per the OSM tile policy.
+* Map tiles: OpenStreetMap (free, attribution shown). `SmartMap` accepts `tileUrl`/`tileAttribution` to switch to a commercial tile provider for production traffic (OSM tile policy).
+* Failure handling: tile outages and offline use are detected and announced, a **List** view works without the map (and is used automatically if the map cannot start),
+  live Places failures fall back to labelled samples, and routing errors are shown rather than replaced by estimated travel times.
 * Directions / route back: Google Maps **URL** deep links — free, no API key, no billing.
 * Categories: Halaal food, hospitals, universities, shopping, beaches, family attractions, sports venues, airport, transport, local events.
 * Concierge: the AI (Meta or simulation) maps the question to categories; places are ranked deterministically (family-friendly first for children, then nearest) with caveats.
@@ -119,8 +143,9 @@ Halaal eateries and events are *fictional placeholders*. The guest house locatio
 
 ## Testing
 
-`npm test` runs 77 tests across: room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
+`npm test` runs 106 tests across: room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
 conflicting bookings, quotation totals & tamper detection, owner-approval and payment guards, invalid/missing enquiry information,
-Meta provider (mocked HTTP, fallback, eligibility), and Smart Maps (labelling, billing gate, concierge).
+Meta AI providers (config, eligibility, mocked success/failure modes, budget, connection test), API routes (no key leakage),
+and Smart Maps (labelling, billing gate, concierge, tile/places/routing failures).
 
-See [`docs/DEMO_PLAN.md`](docs/DEMO_PLAN.md) for the hackathon demo script and roadmap.
+See [`docs/DEMO_PLAN.md`](docs/DEMO_PLAN.md) for the demo script and roadmap, and [`docs/DEPLOYMENT_PLAN.md`](docs/DEPLOYMENT_PLAN.md) for a phone-accessible demo deployment plan (not yet deployed).
