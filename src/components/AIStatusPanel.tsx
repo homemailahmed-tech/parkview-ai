@@ -14,7 +14,7 @@ const CLASS_LABEL = {
 
 /** Shows which language provider is configured, why live mode is off, and lets the owner run a connection test. */
 export function AIStatusPanel({ status }: { status: AIStatus | null }) {
-  const { role } = useStore();
+  const { role, ownerAccess, logoutOwner } = useStore();
   const [token, setToken] = useState("");
   const [result, setResult] = useState<{ ok: boolean; detail: string; model?: string; latencyMs?: number } | null>(null);
   const [testing, setTesting] = useState(false);
@@ -72,11 +72,19 @@ export function AIStatusPanel({ status }: { status: AIStatus | null }) {
       )}
       {role === "owner" && ai.connectionTestEnabled && (
         <div className="mt-3 flex flex-wrap items-end gap-2 border-t border-slate-100 pt-3">
-          <input className={`${inputClass} max-w-xs`} type="password" placeholder="Owner token" value={token} onChange={(e) => setToken(e.target.value)} />
-          <Button variant="secondary" disabled={!token || testing} onClick={checkCatalog}>List available Meta models (free, no model call)</Button>
-          {ai.kind !== "simulation" && (
-            <Button variant="owner" disabled={!token || testing} onClick={test}>{testing ? "Testing…" : "Test live connection (1 small call)"}</Button>
+          {!ownerAccess.owner && (
+            <input className={`${inputClass} max-w-xs`} type="password" placeholder="Owner tools token" value={token} onChange={(e) => setToken(e.target.value)} />
           )}
+          <Button variant="secondary" disabled={(!ownerAccess.owner && !token) || testing} onClick={checkCatalog}>List available Meta models (free, no model call)</Button>
+          {ai.kind !== "simulation" && (
+            <Button variant="owner" disabled={(!ownerAccess.owner && !token) || testing} onClick={test}>{testing ? "Testing…" : "Test live connection (1 small call)"}</Button>
+          )}
+        </div>
+      )}
+      {ownerAccess.owner && (
+        <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500">
+          <span>🔓 Signed in as owner on this device (12 hours).</span>
+          <Button variant="ghost" className="px-2 py-1 text-xs" onClick={logoutOwner}>Sign out owner</Button>
         </div>
       )}
       {catalog && (

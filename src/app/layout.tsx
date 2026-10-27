@@ -4,6 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Hospitality AI · Parkside Demo Guest House",
   description: "Enquiry, room-allocation and quotation assistant for independent guest houses — hackathon demo with fictional data.",
+  robots: { index: false, follow: false },
 };
 
 export const viewport: Viewport = {

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { DEMO_PROPERTY } from "@/lib/data/property";
 import { useStore } from "./store";
-import { Badge, cx } from "./ui";
+import { Badge, Button, cx } from "./ui";
 import { Overview } from "./Overview";
 import { Inventory } from "./Inventory";
 import { Inbox } from "./Inbox";
@@ -146,19 +147,76 @@ function Brand({ compact }: { compact?: boolean }) {
 }
 
 function RoleSwitch({ compact }: { compact?: boolean }) {
-  const { role, setRole } = useStore();
+  const { role, setRole, canActAsOwner, ownerAccess } = useStore();
+  const [asking, setAsking] = useState(false);
+  const choose = (r: "staff" | "owner") => {
+    if (r === "owner" && !canActAsOwner) setAsking(true);
+    else setRole(r);
+  };
   return (
-    <div className={cx("rounded-xl bg-slate-100 p-1 text-xs", compact ? "flex" : "grid grid-cols-2")}>
-      {(["staff", "owner"] as const).map((r) => (
-        <button
-          key={r}
-          onClick={() => setRole(r)}
-          className={cx("rounded-lg px-2.5 py-1 font-medium capitalize", role === r ? (r === "owner" ? "bg-amber-500 text-white" : "bg-white text-slate-900 shadow-sm") : "text-slate-500")}
-        >
-          {compact ? r : `Act as ${r}`}
-        </button>
-      ))}
-    </div>
+    <>
+      <div className={cx("rounded-xl bg-slate-100 p-1 text-xs", compact ? "flex" : "grid grid-cols-2")}>
+        {(["staff", "owner"] as const).map((r) => (
+          <button
+            key={r}
+            onClick={() => choose(r)}
+            className={cx("rounded-lg px-2.5 py-1.5 font-medium capitalize", role === r ? (r === "owner" ? "bg-amber-500 text-white" : "bg-white text-slate-900 shadow-sm") : "text-slate-500")}
+          >
+            {r === "owner" && !canActAsOwner ? "🔒 " : ""}
+            {compact ? r : `Act as ${r}`}
+          </button>
+        ))}
+      </div>
+      {asking && <OwnerLoginDialog enabled={ownerAccess.ownerLoginEnabled} onClose={() => setAsking(false)} />}
+    </>
+  );
+}
+
+function OwnerLoginDialog({ enabled, onClose }: { enabled: boolean; onClose: () => void }) {
+  const { loginOwner } = useStore();
+  const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    const err = await loginOwner(code);
+    setBusy(false);
+    if (err) setError(err);
+    else onClose();
+  };
+  // Portal to <body>: the header's backdrop-blur would otherwise trap this fixed overlay inside the header.
+  return createPortal(
+    <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-black/40 p-4 sm:items-center" role="dialog" aria-modal="true" aria-label="Owner login">
+      <form onSubmit={submit} className="w-full max-w-sm rounded-3xl bg-white p-5 text-left shadow-xl">
+        <h2 className="font-semibold text-slate-900">🔒 Owner controls</h2>
+        {enabled ? (
+          <>
+            <p className="mt-1 text-sm text-slate-500">Approving quotes and recording payments are owner-only. Enter the owner code.</p>
+            <input
+              type="password"
+              autoComplete="current-password"
+              autoFocus
+              aria-label="Owner code"
+              className="mt-3 w-full rounded-xl border border-slate-200 px-3 py-3 text-base outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
+            {error && <p className="mt-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-4 flex gap-2">
+              <Button type="button" variant="secondary" className="flex-1" onClick={onClose}>Cancel</Button>
+              <Button type="submit" variant="owner" className="flex-1" disabled={!code || busy}>{busy ? "Checking…" : "Unlock"}</Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mt-1 text-sm text-slate-500">Owner controls are switched off on this deployment.</p>
+            <Button type="button" variant="secondary" className="mt-4 w-full" onClick={onClose}>OK</Button>
+          </>
+        )}
+      </form>
+    </div>,
+    document.body,
   );
 }
 

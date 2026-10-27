@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { selectProvider } from "@/lib/ai/service";
 import { selectMapsProviders } from "@/lib/maps/providers";
+import { ownerToolsEnabled } from "@/lib/security/ownerTools";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export async function GET() {
       configIssue: sel.configIssue ?? null,
       warnings: sel.config.warnings,
       liveCallsRemainingToday: sel.budget?.remaining ?? null,
-      connectionTestEnabled: Boolean(process.env.AI_CONNECTION_TEST_TOKEN),
+      connectionTestEnabled: ownerToolsEnabled(),
     },
     maps: { places: maps.places.id, routing: maps.routing.id, notes: maps.notes },
   });

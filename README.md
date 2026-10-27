@@ -24,16 +24,17 @@ Built for the Meta Global AI Developer Hackathon 2026.
 npm install
 cp .env.example .env.local   # optional — defaults to simulation mode
 npm run dev                  # http://localhost:3000
-npm test                     # 125 automated tests
+npm test                     # 142 automated tests
 npm run typecheck
 npm run build
 ```
 
-Requires Node.js 20+. Use the **Staff / Owner** switch in the top bar to see owner-only actions.
+Requires Node.js 22. In local development (`npm run dev`) the **Staff / Owner** switch works freely. On a deployed site, owner mode
+needs the owner code (`OWNER_ACCESS_CODE`).
 **Reset demo data** is at the bottom of the desktop sidebar (state is kept in the browser's localStorage).
 
-**Mobile preview:** run `npm run dev -- -H 0.0.0.0` and open `http://<your-computer-ip>:3000` on a phone on the same Wi-Fi.
-The site is not deployed anywhere yet.
+**Phone demo:** see [`docs/DEPLOYMENT_PLAN.md`](docs/DEPLOYMENT_PLAN.md). It covers free Vercel Hobby hosting set up entirely from an
+Android phone, with a demo access code and owner login. The site is not deployed yet.
 
 ## The demo property
 
@@ -125,7 +126,7 @@ In that case their output is labelled **DEV MODEL · not Meta AI · not hackatho
 - no retry on rejected credentials
 - keys redacted from errors
 - a daily cap on live calls (`AI_DAILY_CALL_LIMIT`)
-- an owner-only connection test, off unless `AI_CONNECTION_TEST_TOKEN` is set
+- owner-only connection test and model-catalogue tools, which need an owner login
 
 Any failure falls back to simulation with the reason shown next to the output.
 
@@ -151,10 +152,28 @@ Halaal eateries and events are *fictional placeholders*. The guest house locatio
 
 ## Testing
 
-`npm test` runs 125 tests across: room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
+`npm test` runs 142 tests across: room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
 conflicting bookings, quotation totals & tamper detection, owner-approval and payment guards, invalid/missing enquiry information,
 Meta AI providers and switchboard (Meta Model API, Groq, OpenRouter, open-weight: config, model classes, mocked success/failure modes,
 free-only guard, catalogue check, budget, connection test), API routes (no key leakage), secret hygiene,
-and Smart Maps (labelling, billing gate, concierge, tile/places/routing failures).
+Smart Maps (labelling, billing gate, concierge, tile/places/routing failures), and deployment security (signed sessions,
+demo gate, owner login, owner-only tools, rate limits, security headers, data hygiene).
 
-See [`docs/DEMO_PLAN.md`](docs/DEMO_PLAN.md) for the demo script and roadmap, and [`docs/DEPLOYMENT_PLAN.md`](docs/DEPLOYMENT_PLAN.md) for a phone-accessible demo deployment plan (not yet deployed).
+See [`docs/DEMO_PLAN.md`](docs/DEMO_PLAN.md) for the demo script and roadmap, and [`docs/DEPLOYMENT_PLAN.md`](docs/DEPLOYMENT_PLAN.md) for the phone-only deployment steps (not yet deployed).
+
+## Security for the public demo
+
+| Control | Variable |
+| --- | --- |
+| Site-wide demo access code, shared with judges. Signed HttpOnly cookie | `DEMO_ACCESS_CODE` |
+| Owner login for approvals, payments and AI tools. Locked on deployed sites without it | `OWNER_ACCESS_CODE`, `SESSION_SECRET` |
+| Optional: let visitors try owner role in their own browser sandbox | `DEMO_PUBLIC_OWNER_MODE` |
+
+Also built in:
+- rate limits (stricter on code entry)
+- a strict Content-Security-Policy and other security headers
+- `noindex`
+- server-only API keys
+- tests that fail if browser code reads environment variables or if real guest-house references appear
+
+Demo state lives in each visitor's own browser. There is no shared database, so nothing one visitor does affects another.

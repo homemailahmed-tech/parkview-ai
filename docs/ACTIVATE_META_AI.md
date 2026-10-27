@@ -15,10 +15,9 @@ and a live call is made. Please approve any spend first.
    # META_MODEL_API_BASE_URL=https://api.meta.ai/v1
    # META_MODEL_API_MODEL=muse-spark-1.3
    AI_DAILY_CALL_LIMIT=100
-   AI_CONNECTION_TEST_TOKEN=<long random string>
    ```
 3. Restart the app. The **Overview → AI provider** panel should show *Meta Model API · muse-spark-1.3* with no configuration issues.
-4. Switch to **Owner**, enter the test token and press **Test live connection**. This makes one small billable call.
+4. Tap **🔒 Owner**, enter the owner code (`OWNER_ACCESS_CODE`), then press **Test live connection**. This makes one small billable call.
    - ✓ Connected: live AI is working.
    - `credentials rejected (HTTP 401/403)`: the key is wrong, revoked or not enabled for the API.
    - `rate limited or out of credits (HTTP 429)`: check credits or quota.
@@ -46,7 +45,7 @@ If the host's model id contains neither "muse-spark-open" nor "llama" (e.g. a cu
 ## Route C: GroqCloud (free tier, Meta model only if your account has access)
 
 1. Owner creates a key at console.groq.com/keys. Groq documents a free plan; check its current terms.
-2. Set `AI_MODE=groq`, `GROQ_API_KEY`, `AI_CONNECTION_TEST_TOKEN`. Leave `GROQ_MODEL` empty at first.
+2. Set `AI_MODE=groq` and `GROQ_API_KEY`. Leave `GROQ_MODEL` empty at first. Owner login (`OWNER_ACCESS_CODE`) is required for the tools below.
 3. Overview → AI provider → **List available Meta models**. This is free and spends no tokens.
 4. If a Meta model is listed (e.g. `meta-models/muse-spark-open` after Groq approves preview access), set `GROQ_MODEL` to it,
    restart, then **Test live connection**. If no Meta model is listed, Groq cannot serve this demo yet.
@@ -54,7 +53,7 @@ If the host's model id contains neither "muse-spark-open" nor "llama" (e.g. a cu
 ## Route D: OpenRouter (free `:free` models only, by default)
 
 1. Owner creates a key at openrouter.ai/keys.
-2. Set `AI_MODE=openrouter`, `OPENROUTER_API_KEY`, `AI_CONNECTION_TEST_TOKEN`, then press **List available Meta models**.
+2. Set `AI_MODE=openrouter` and `OPENROUTER_API_KEY`, log in as owner, then press **List available Meta models**.
 3. If a Meta model is shown as **free**, set `OPENROUTER_MODEL` to that exact id (ending in `:free`).
    Paid ids such as `meta/muse-spark-open` are refused unless `OPENROUTER_FREE_ONLY=false`. Set that only after approving spend.
 

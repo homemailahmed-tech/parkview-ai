@@ -22,6 +22,7 @@
 | ✅ Mission 1 | Dashboard, inventory, inbox, allocation engine, quotation builder, owner workflow, demo mode, tests |
 | ✅ Mission 1 addendum | Smart Maps & concierge with sample data; Google Places/Routes prepared behind a billing gate |
 | ✅ Mission 2 | Meta Model API (Muse Spark 1.3) + open-weight provider support, failure handling, spend cap, Smart Maps failure handling |
+| ✅ Mission 3 | Secure phone demo prep: demo access code, owner login, rate limits, security headers, Android checks, Vercel Hobby plan (awaiting owner approval to deploy) |
 | ⏳ Needs credentials | Live Meta calls (Meta Model API key, or open-weight host key) — run connection test and record results |
 | ⏳ Needs owner approval | Google Maps Platform billing (Places + Routes) for live places, opening hours and travel times |
 | Next | Verified Halaal data source (e.g. certifying-body listings) — never infer certification |
