@@ -1,4 +1,4 @@
-import type { Actor, Booking, Enquiry, PaymentRecord, Quote, Room, WorkflowStatus } from "../domain/types";
+import type { Actor, Booking, Enquiry, GuestUnit, PaymentRecord, Quote, Room, WorkflowStatus } from "../domain/types";
 import { isRoomAvailable } from "../allocation/engine";
 import { verifyQuoteTotals } from "../quote/pricing";
 
@@ -81,6 +81,7 @@ export interface TransitionContext {
 export function canTransition(enquiry: Enquiry, type: WorkflowAction["type"], actor: Actor): boolean {
   const rule = ALLOWED[type];
   if (NEEDS_NO_OPEN_QUESTIONS.includes(type) && enquiry.openQuestions?.length) return false;
+  if (NEEDS_CURRENT_QUOTE.includes(type) && quoteStaleReasons(enquiry).length) return false;
   return rule.from.includes(enquiry.status) && rule.actors.includes(actor);
 }
 
@@ -102,11 +103,46 @@ function assertRoomsFree(quote: Quote, ctx: TransitionContext, ignoreQuoteId?: s
 /** Actions that make a booking binding: blocked while any open question is unresolved. */
 const NEEDS_NO_OPEN_QUESTIONS: WorkflowAction["type"][] = ["owner_approve", "send_quote", "confirm"];
 
+/** Actions that commit to the quote: each re-checks it against the CURRENT booking requirements. */
+const NEEDS_CURRENT_QUOTE: WorkflowAction["type"][] = ["submit_for_approval", "owner_approve", "send_quote", "confirm"];
+
+const guestsIn = (units: GuestUnit[]) => units.reduce((s, u) => s + u.adults + u.children, 0);
+/** What makes a party materially different for rooms and price (labels and ids are not material). */
+const partyKey = (units: GuestUnit[]) =>
+  units.map((u) => [u.kind, u.adults, u.children, u.couples, u.separateBeds, u.privateRoom, u.access].join("|")).sort().join(";");
+
+/**
+ * Quote integrity (added after the Stage 5 choir run, where an 8-guest quote stayed approvable after the
+ * guest parties were corrected to 16). A quote is stale when the enquiry's current dates or guest parties
+ * differ from those it was priced for, or when its room lines do not hold its own guests. Stale quotes are
+ * never altered here: staff must choose room options again, which builds a new quote version.
+ */
+export function quoteStaleReasons(enquiry: Enquiry): string[] {
+  const q = enquiry.quote;
+  if (!q) return [];
+  const r = enquiry.request;
+  if (!r) return ["the enquiry has no current booking requirements"];
+  const out: string[] = [];
+  if (r.checkIn !== q.checkIn || r.checkOut !== q.checkOut) out.push(`dates changed (quote ${q.checkIn} → ${q.checkOut}, now ${r.checkIn} → ${r.checkOut})`);
+  const now = guestsIn(r.units), quoted = guestsIn(q.units);
+  if (now !== quoted) out.push(`guest count changed (quote for ${quoted}, parties now ${now})`);
+  else if (partyKey(r.units) !== partyKey(q.units)) out.push("guest parties changed (adults/children, couples, beds, private rooms or access needs)");
+  const inRooms = q.lines.reduce((s, l) => s + l.guests, 0);
+  if (inRooms !== quoted) out.push(`quote rooms hold ${inRooms} guests but the quote is for ${quoted}`);
+  return out;
+}
+
+function assertQuoteCurrent(enquiry: Enquiry) {
+  const reasons = quoteStaleReasons(enquiry);
+  if (reasons.length) throw new WorkflowError(`Quote is out of date: ${reasons.join("; ")}. Choose room options again to recalculate the quote.`);
+}
+
 export function transition(enquiry: Enquiry, action: WorkflowAction, ctx: TransitionContext): Enquiry {
   const rule = ALLOWED[action.type];
   if (NEEDS_NO_OPEN_QUESTIONS.includes(action.type) && enquiry.openQuestions?.length) {
     throw new WorkflowError(`Provisional: ${enquiry.openQuestions.length} open question(s) must be resolved with the guest first (${enquiry.openQuestions.map((q) => q.text).join("; ")})`);
   }
+  if (NEEDS_CURRENT_QUOTE.includes(action.type)) assertQuoteCurrent(enquiry);
   if (!rule.from.includes(enquiry.status)) {
     throw new WorkflowError(`Cannot ${action.type.replace(/_/g, " ")} while status is "${STATUS_LABEL[enquiry.status]}"`);
   }

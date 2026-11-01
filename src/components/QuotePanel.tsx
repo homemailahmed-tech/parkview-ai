@@ -8,7 +8,7 @@ import { formatDate } from "@/lib/domain/dates";
 import { formatMoney } from "@/lib/domain/money";
 import { formatQuoteText } from "@/lib/quote/format";
 import { reviseQuote } from "@/lib/quote/pricing";
-import { PIPELINE, STATUS_LABEL, canTransition, type WorkflowAction } from "@/lib/workflow/stateMachine";
+import { PIPELINE, STATUS_LABEL, canTransition, quoteStaleReasons, type WorkflowAction } from "@/lib/workflow/stateMachine";
 import { useStore } from "./store";
 import { Badge, Button, Card, Field, Notice, SourceTag, cx, inputClass } from "./ui";
 
@@ -95,6 +95,12 @@ export function QuotePanel({ enquiry, onError }: { enquiry: Enquiry; onError: (e
       {(enquiry.openQuestions?.length ?? 0) > 0 && (
         <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900" data-testid="provisional-banner">
           PROVISIONAL quote: {enquiry.openQuestions!.length} open question{enquiry.openQuestions!.length === 1 ? "" : "s"} (see top). Owner approval, sending and confirmation stay locked until resolved.
+        </div>
+      )}
+
+      {!["confirmed", "declined", "cancelled"].includes(enquiry.status) && quoteStaleReasons(enquiry).length > 0 && (
+        <div className="mt-3 rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-900" data-testid="stale-quote-banner">
+          OUT-OF-DATE quote: {quoteStaleReasons(enquiry).join("; ")}. Choose room options again to recalculate. Submitting, approval, sending and confirmation stay locked until then.
         </div>
       )}
 

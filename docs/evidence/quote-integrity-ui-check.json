@@ -1,0 +1,45 @@
+{
+ "what": "Quote-integrity check in the real app (browser, 412x915), 1 Nov 2026. SIMULATION mode: the Meta key was removed from the server environment and the spend cap set to 0, so no Meta call was possible. Seeded fictional enquiry E-1003 (Coach Mike, 11 guests, quote awaiting owner approval).",
+ "steps": [
+  "Owner role; seeded quote is current and approvable",
+  "Edit quote (voids approval) -> draft; expand guest parties",
+  "Rename a party (not material)",
+  "Remove a party (11 -> 10 guests)",
+  "Try to submit for owner approval",
+  "Find room options -> Use Option A (recalculated quote)",
+  "Submit, then approve as owner"
+ ],
+ "result": {
+  "step": "edit",
+  "seeded": {
+   "stale": 0,
+   "approveEnabled": true
+  },
+  "afterEdit": {
+   "status": "Draft quote",
+   "partyEditor": 11
+  },
+  "afterRename": {
+   "stale": 0
+  },
+  "afterRemoveParty": {
+   "banner": "OUT-OF-DATE quote: guest count changed (quote for 11, parties now 10). Choose room options again to recalculate. Submitting, approval, sending and confirmation stay locked until then."
+  },
+  "submitAttempt": {
+   "stillDraft": true,
+   "error": "Quote is out of date: guest count changed (quote for 11, parties now 10). Choose room options again to recalculate the quote."
+  },
+  "afterRequote": {
+   "stale": 0,
+   "heading": "3 · Quotation Q-1003 v3"
+  },
+  "afterSubmit": {
+   "approveEnabled": true
+  },
+  "afterApprove": {
+   "approvedBadge": "✔ Approved by Demo Owner"
+  },
+  "pageErrors": []
+ },
+ "script": "stale-check.js (Playwright), run locally; not committed"
+}

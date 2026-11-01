@@ -98,19 +98,29 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
       const e = state.enquiries.find((x) => x.id === id);
       if (!e) return "Enquiry not found";
       try {
-        const next = transition(e, action, {
+        const ctxFor = (bookings: typeof state.bookings) => ({
           actor: actor ?? state.role,
           rooms: DEMO_PROPERTY.rooms,
-          bookings: state.bookings,
+          bookings,
           depositPercent: DEMO_PROPERTY.depositPercent,
         });
-        setState((s) =>
-          s && {
+        const next = transition(e, action, ctxFor(state.bookings));
+        setState((s) => {
+          if (!s) return s;
+          // Stale browser state: if the enquiry changed after this render (e.g. guest parties edited),
+          // re-run the checks on the latest version; if they now fail, change nothing.
+          const cur = s.enquiries.find((x) => x.id === id);
+          let applied = next;
+          if (cur !== e) {
+            if (!cur) return s;
+            try { applied = transition(cur, action, ctxFor(s.bookings)); } catch { return s; }
+          }
+          return {
             ...s,
-            enquiries: s.enquiries.map((x) => (x.id === id ? next : x)),
-            bookings: next.status === "confirmed" ? [...s.bookings, ...bookingsForConfirmed(next)] : s.bookings,
-          },
-        );
+            enquiries: s.enquiries.map((x) => (x.id === id ? applied : x)),
+            bookings: applied.status === "confirmed" ? [...s.bookings, ...bookingsForConfirmed(applied)] : s.bookings,
+          };
+        });
         return null;
       } catch (err) {
         return (err as Error).message;
