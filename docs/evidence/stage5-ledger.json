@@ -1,0 +1,123 @@
+{
+  "mode": "LIVE (https://api.meta.ai/v1) — Stage 5, 1 Nov 2026",
+  "caps": {
+    "maxCalls": 8,
+    "maxUSD": 0.045,
+    "maxChat": 7,
+    "maxVoice": 1
+  },
+  "calls": [
+    {
+      "n": 1,
+      "kind": "chat",
+      "at": "2026-11-01T12:01:24.793Z",
+      "worstUSD": 0.005690000000000001,
+      "status": 200,
+      "costUSD": 0.00311825,
+      "responseId": "chatcmpl-01a196fc-7003-77ab-961e-885b471c73e6",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 475,
+        "completionTokens": 594,
+        "reasoningTokens": 491
+      },
+      "output": "{\"guestName\": \"Annelie\", \"checkIn\": \"2026-12-14\", \"checkOut\": \"2026-12-21\", \"nights\": 7, \"adults\": 3, \"children\": 3, \"families\": [{\"adults\": 2, \"children\": 3}], \"groundFloorGuests\": 1, \"selfCatering\": true, \"notes\": [\"Grandmother cannot climb stairs\"]}"
+    },
+    {
+      "n": 2,
+      "kind": "chat",
+      "at": "2026-11-01T12:02:05.122Z",
+      "worstUSD": 0.0057375,
+      "status": 200,
+      "costUSD": 0.0033355,
+      "responseId": "chatcmpl-01a196fd-0d9a-7566-8573-6b706b1d2621",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 489,
+        "completionTokens": 641,
+        "reasoningTokens": 524
+      },
+      "output": "{\"guestName\": \"Mpho\", \"checkIn\": \"2026-11-21\", \"checkOut\": \"2026-11-24\", \"nights\": 3, \"couples\": 4, \"groundFloorGuests\": 1, \"separateBeds\": true, \"notes\": [\"16 people total\", \"gogo coming, cannot do stairs\"], \"clarifications\": [\"Is gogo included in the 16 or extra?\", \"How many of the 16 are adults vs children?\"]}"
+    },
+    {
+      "n": 3,
+      "kind": "chat",
+      "at": "2026-11-01T12:02:39.492Z",
+      "worstUSD": 0.0057,
+      "status": 200,
+      "costUSD": 0.0033615,
+      "responseId": "chatcmpl-01a196fd-960a-77ac-ac99-76ab04e5a67a",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 469,
+        "completionTokens": 653,
+        "reasoningTokens": 542
+      },
+      "output": "{\"guestName\": \"Thandeka\", \"checkIn\": \"2026-11-13\", \"drivers\": 1, \"groundFloorGuests\": 1, \"notes\": [\"1 coach uses crutches\", \"no stairs\"], \"clarifications\": [\"What date is check-out - is it two nights (check-out Sunday 15 November)?\", \"Are the 12 netball girls adults or children and how many of each?\", \"Do the two coaches need their own rooms?\"]}"
+    },
+    {
+      "n": 4,
+      "kind": "chat",
+      "at": "2026-11-01T12:02:50.939Z",
+      "worstUSD": 0.005222500000000001,
+      "status": 200,
+      "costUSD": 0.00150225,
+      "responseId": "chatcmpl-01a196fd-ba2a-7657-9487-93bf717c01b1",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 243,
+        "completionTokens": 282,
+        "reasoningTokens": 212
+      },
+      "output": "Sawubona Thandeka, thank you for your message!\nCould you please confirm your exact arrival date and how many nights you will stay?\nHow many people will be staying in total, including drivers, coaches or helpers?\nAnd how many are adults, and how many are children under 18?\n"
+    },
+    {
+      "n": 5,
+      "kind": "chat",
+      "at": "2026-11-01T12:03:00.969Z",
+      "worstUSD": 0.005690000000000001,
+      "status": 200,
+      "costUSD": 0.0026272500000000002,
+      "responseId": "chatcmpl-01a196fd-e3cb-735f-9938-298ad8fd4103",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 463,
+        "completionTokens": 482,
+        "reasoningTokens": 377
+      },
+      "output": "{\"guestName\": \"Lindiwe\", \"checkIn\": \"2026-11-21\", \"checkOut\": \"2026-11-23\", \"nights\": 2, \"adults\": 14, \"couples\": 4, \"drivers\": 1, \"wheelchairUsers\": 1, \"notes\": [\"quote requested\"], \"clarifications\": [\"Does the total of 14 adults include the bus driver or is he extra?\"]}"
+    },
+    {
+      "n": 6,
+      "kind": "chat",
+      "at": "2026-11-01T12:03:08.555Z",
+      "worstUSD": 0.0059925,
+      "status": 200,
+      "costUSD": 0.0038699999999999997,
+      "responseId": "chatcmpl-01a196fe-0a76-722c-920f-91b1dd4736c3",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 716,
+        "completionTokens": 700,
+        "reasoningTokens": 577
+      },
+      "output": "Hi Lindiwe, here are two options for the group.\nOption A keeps everyone in shared rooms, with couples together and Guests 2, 3 and 4 sharing the Courtyard Triple.\nOption B offers more privacy, with Guest 5 in the Garden View Triple, Guest 1 in the Family Room, and Couple 3 and Couple 4 in the Ground Floor Queen and Self-Catering Apartment.\nIn both options, Couple 1's wheelchair need is met in Room 1 Accessible Triple, which is wheelchair accessible on the ground floor.\n"
+    },
+    {
+      "n": 7,
+      "kind": "chat",
+      "at": "2026-11-01T12:03:20.785Z",
+      "worstUSD": 0.00506,
+      "status": 200,
+      "costUSD": 0.00115675,
+      "responseId": "chatcmpl-01a196fe-2e92-76de-958a-7accd72e4558",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 174,
+        "completionTokens": 221,
+        "reasoningTokens": 182
+      },
+      "output": "Hello Lindiwe, thank you so much for getting in touch! Please have a look at our proposed room arrangement and quotation below for your review."
+    }
+  ]
+}

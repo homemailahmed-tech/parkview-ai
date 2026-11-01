@@ -1,5 +1,5 @@
 import type { ExtractedEnquiry, ExtractionCheck } from "./extraction";
-import type { Actor, Enquiry, OpenQuestion, QuestionTopic, WorkflowEvent } from "../domain/types";
+import type { Actor, Enquiry, GuestUnit, OpenQuestion, QuestionTopic, WorkflowEvent } from "../domain/types";
 
 export type { OpenQuestion, QuestionTopic };
 
@@ -35,7 +35,7 @@ export function agesUnstated(message: string): boolean {
 }
 
 /** Builds the open questions for an interpreted enquiry (deterministic notes + the AI's clarifications). */
-export function openQuestionsFrom(check: ExtractionCheck, message: string): OpenQuestion[] {
+export function openQuestionsFrom(check: ExtractionCheck, message: string, units: GuestUnit[] = []): OpenQuestion[] {
   const out: OpenQuestion[] = [];
   const add = (q: OpenQuestion) => {
     const key = q.text.toLowerCase();
@@ -50,9 +50,16 @@ export function openQuestionsFrom(check: ExtractionCheck, message: string): Open
   if (agesUnstated(message)) {
     add({ topic: "ages", text: "Ages not stated by the guest: confirm who is an adult and who is a child before allocating rooms" });
   }
-  // Ages the AI inferred (children without the guest saying so) block allocation until confirmed.
+  // Ages the guest did not state (or the AI inferred) block allocation until confirmed.
   const ageOpen = out.some((q) => q.topic === "ages");
-  if (ageOpen && aiChildren) for (const q of out) if (q.topic === "ages") q.blocksAllocation = true;
+  if (ageOpen && (aiChildren || agesUnstated(message))) for (const q of out) if (q.topic === "ages") q.blocksAllocation = true;
+  // Access needs: with several parties the app cannot know WHICH party contains the guest who
+  // needs a wheelchair / no stairs. It assigns the need to one party; staff must confirm who.
+  const needy = units.filter((u) => u.access !== "none");
+  if (units.length > 1 && ((v.wheelchairUsers ?? 0) > 0 || (v.groundFloorGuests ?? 0) > 0)) {
+    const need = (v.wheelchairUsers ?? 0) > 0 ? "uses a wheelchair" : "cannot use stairs";
+    add({ topic: "access", text: `Which guest ${need}? The app assigned this need to ${needy.map((u) => u.label).join(", ") || "no party"} — confirm, or move it in the guest parties` });
+  }
   return mergeByTopic(out);
 }
 
@@ -139,6 +146,17 @@ export function resolveOpenQuestions(enquiry: Enquiry, resolutions: QuestionReso
     if (answer.length < 2) throw new ResolutionError(`Enter the guest's actual answer for: ${q.text}`);
     if (!CONFIRMATION_SOURCES.includes(r.source)) throw new ResolutionError("Choose where the answer came from (WhatsApp, phone, email or in person)");
     if (by.length < 2) throw new ResolutionError("Enter who received the guest's answer");
+    // A head-count answer must state the total, and the guest parties must already match it.
+    const partyTotal = (enquiry.request?.units ?? []).reduce((s, u) => s + u.adults + u.children, 0);
+    if (q.topic === "count") {
+      const nums = [...answer.matchAll(/\b(\d{1,3})(?:st|nd|rd|th)?\b/gi)].map((m) => Number(m[1])); // "17" or "17th"
+      if (!nums.length) throw new ResolutionError(`Include the confirmed total number of guests in the answer to: ${q.text}`);
+      if (!nums.includes(partyTotal)) throw new ResolutionError(`The guest's answer (${nums.join(", ")}) does not match the guest parties (${partyTotal} people). Update the parties first.`);
+    }
+    if (q.topic === "ages" && /\b(all|only)\b.*\badults?\b|\bno (children|kids)\b/i.test(answer)) {
+      const kids = (enquiry.request?.units ?? []).reduce((s, u) => s + u.children, 0);
+      if (kids > 0) throw new ResolutionError(`The guest says all are adults, but the guest parties include ${kids} child(ren). Update the parties first.`);
+    }
     closed.add(q.text);
     events.push({ at: now, actor, action: "resolve_question", from: enquiry.status, to: enquiry.status, note: `[${q.topic}] ${q.text} → guest confirmed: "${answer.slice(0, 200)}" (via ${r.source}, recorded by ${by.slice(0, 60)})` });
   }

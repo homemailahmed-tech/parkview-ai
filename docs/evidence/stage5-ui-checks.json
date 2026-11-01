@@ -1,0 +1,29 @@
+{
+  "h3Sim": {
+    "tag": "SIMULATION · not Meta AI",
+    "missing": "Missing: check-in date, check-out date or number of nights, number of adults — ask the guest or fill in below."
+  },
+  "h3-replayError": "locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.",
+  "h2Open": "⚠ Provisional · 2 open questions\nOwner approval and confirmation locked\nCOUNTconfirmed total number of adults (not stated; 8 counted from the roles described) · Is gogo included in the 16 or extra?\nAGESHow many of the 16 are adults vs children?\n\nRecord what the guest actually confirmed. A question only closes with the guest's answer, where it came from and who received it (saved in the audit trail). Update the guest parties and dates below to match.\n\nGuest's answer: confirmed total number of adults (not stated; 8 counted from the roles described) · Is gogo included in the 16 or extra?\nGuest's answer: How many of the 16 are adults vs children?\nAnswer received via\nWhatsApp\nPhone call\nEmail\nIn person\nReceived by (staff name)\n✓ Record the guest's answers",
+  "h2Tag": "✓ Live Meta AI · Meta Model API · muse-spark-1.3",
+  "h2ApproveDisabled": true,
+  "h2Banner": "PROVISIONAL quote: 2 open questions (see top). Owner approval, sending and confirmation stay locked until resolved.",
+  "h2OpenAfter": 0,
+  "h2ApproveEnabledAfter": true,
+  "h2Audit": "2026/11/01, 12:02:30 · owner · resolve question → Awaiting owner approval ([count] confirmed total number of adults (not stated; 8 counted from the roles described) · Is gogo included in the 16 or extra? → guest confirmed: \"Demo (fictional reply): gogo is included in the 16\" (via whatsapp, recorded by Demo staff))",
+  "h1Open": "⚠ Provisional · 4 open questions\nOwner approval and confirmation locked\nCOUNTconfirmed total number of adults (not stated; 1 counted from the roles described) · guest count to confirm: the message mentions 12 people but the interpretation has 1\nDATESWhat date is check-out - is it two nights (check-out Sunday 15 November)? · check-out date or number of nights · dates to confirm with the guest: they wrote \"Friday after next\" (resolved from 2026-11-01)\nAGESAre the 12 netball girls adults or children and how many of each? · Ages not stated by the guest: confirm who is an adult and who is a child before allocating rooms\nPREFERENCEDo the two coaches need their own rooms?\n\nRecord what the guest actually confirmed. A question only closes with the guest's answer, where it came from and who received it (saved in the audit trail). Update the guest parties and dates below to match.\n\nGuest's answer: confirmed total number of adults (not stated; 1 counted from the roles described) · guest count to confirm: the message mentions 12 people but the interpretation has 1\nGuest's answer: What date is check-out - is it two nights (check-out Sunday 15 November)? · check-out date or number of nights · dates to confirm with the guest: they wrote \"Friday after next\" (resolved from 2026-11-01)\nGuest's answer: Are the 12 netball girls adults or children and how many of each? · Ages not stated by the guest: confirm who is an adult and who is a child before allocating rooms\nGuest's answer: Do the two coaches need their own rooms?\nAnswer received via\nWhatsApp\nPhone call\nEmail\nIn person\nReceived by (staff name)\n✓ Record the guest's answers",
+  "h1Tag": "✓ Live Meta AI · Meta Model API · muse-spark-1.3",
+  "h1FindDisabled": false,
+  "h1Clarify": {
+    "tag": "✓ Live Meta AI · Meta Model API · muse-spark-1.3",
+    "text": "Sawubona Thandeka, thank you for your message!\nCould you please confirm your exact arrival date and how many nights you will stay?\nHow many people will be staying in total, including drivers, coaches or helpers?\nAnd how many are adults, and how many are children under 18?"
+  },
+  "lindiweInterpretTag": "✓ Live Meta AI · Meta Model API · muse-spark-1.3",
+  "explanationTag": "✓ Live Meta AI · Meta Model API · muse-spark-1.3",
+  "explanation": "Hi Lindiwe, here are two options for the group.\nOption A keeps everyone in shared rooms, with couples together and Guests 2, 3 and 4 sharing the Courtyard Triple.\nOption B offers more privacy, with Guest 5 in the Garden View Triple, Guest 1 in the Family Room, and Couple 3 and Couple 4 in the Ground Floor Queen and Self-Catering Apartment.\nIn both options, Couple 1's wheelchair need is met in Room 1 Accessible Triple, which is wheelchair accessible on the ground floor.",
+  "greetingTag": "✓ Live Meta AI · Meta Model API · muse-spark-1.3",
+  "greeting": "*Parkside Demo Guest House — Quotation Q-1001*\n\nHello Lindiwe, thank you so much for getting in touch! Please have a look at our proposed room arrangement and quotation below for your review.\n\n📅 Check-in: Sat, 21 Nov 2026 (from 14:00)\n📅 Check-out: Mon, 23 Nov 2026 (by 10:00)\n🌙 2 nights\n\n• Room 1 · Accessible Triple — 3 guests: R1 500 × 2 = R3 000\n• Room 3 · Corner Triple — 3 guests: R1 450 × 2 = R2 900\n• Room 4 · Family Room — 4 guests: R2 050 × 2 = R4 100\n• Room 5 · Courtyard Triple — 3 guests: R1 450 × 2 = R2 900\n• Room 7 · Ground Floor Double — 1 guest: R750 × 2 = R1 500\n\nSubtotal: R14 400\nGroup discount (5%): -R720\n*Total: R13 680*\nDeposit to secure booking (50%): R6 840\n\nIncludes 5% group discount.\n\nThis quotation is subject to availability until the deposit is received.\n_Demo quotation — fictional property and rates._",
+  "lindiweOpenQuestions": 1,
+  "lindiweResolvedAudit": 1,
+  "confirmed": true
+}

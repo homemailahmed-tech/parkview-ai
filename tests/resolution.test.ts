@@ -32,15 +32,15 @@ describe("resolving open questions requires the guest's actual answer", () => {
   });
 
   it("records the fact, the confirmed value, the source and who received it in the audit trail", () => {
-    const r = resolveOpenQuestions(pending(), [{ question: GOGO, answer: "Gogo is the 17th guest", source: "whatsapp", confirmedBy: "Lerato" }], "staff", "2026-11-02T09:00:00Z");
+    const r = resolveOpenQuestions(pending(), [{ question: GOGO, answer: "Gogo is included in the 16", source: "whatsapp", confirmedBy: "Lerato" }], "staff", "2026-11-02T09:00:00Z");
     const ev = r.events.at(-1)!;
     expect(ev.action).toBe("resolve_question");
-    expect(ev.note).toBe('[count] Is gogo included in the 16 or extra? → guest confirmed: "Gogo is the 17th guest" (via whatsapp, recorded by Lerato)');
-    expect(r.resolvedQuestions?.[0]).toMatchObject({ question: GOGO, answer: "Gogo is the 17th guest", source: "whatsapp", confirmedBy: "Lerato", topic: "count" });
+    expect(ev.note).toBe('[count] Is gogo included in the 16 or extra? → guest confirmed: "Gogo is included in the 16" (via whatsapp, recorded by Lerato)');
+    expect(r.resolvedQuestions?.[0]).toMatchObject({ question: GOGO, answer: "Gogo is included in the 16", source: "whatsapp", confirmedBy: "Lerato", topic: "count" });
   });
 
   it("a partial answer keeps the rest open — approval stays locked until every material question is answered", () => {
-    const one = resolveOpenQuestions(pending(), [{ question: GOGO, answer: "Gogo is the 17th guest", source: "phone", confirmedBy: "Lerato" }], "staff", "t");
+    const one = resolveOpenQuestions(pending(), [{ question: GOGO, answer: "Gogo is included in the 16", source: "phone", confirmedBy: "Lerato" }], "staff", "t");
     expect(one.openQuestions?.map((q) => q.text)).toEqual([AGES]);
     expect(canTransition(one, "owner_approve", "owner")).toBe(false);
     expect(() => transition(one, { type: "owner_approve", ownerName: "Owner" }, C("owner"))).toThrow(/Provisional/);
@@ -54,5 +54,18 @@ describe("resolving open questions requires the guest's actual answer", () => {
     for (const actor of ["owner", "staff", "system", "guest"] as const) expect(canTransition(e, "owner_approve", actor)).toBe(false);
     expect(() => transition({ ...e, status: "approved" }, { type: "send_quote" }, C("owner"))).toThrow(/Provisional/);
     expect(() => transition({ ...e, status: "awaiting_payment" }, { type: "confirm" }, C("owner"))).toThrow(/Provisional/);
+  });
+
+  it("a head-count answer must match the guest parties (Stage 5: the live choir reply left the adults unstated, so the parties held 8)", () => {
+    const e = pending(); // parties: 16
+    expect(() => resolveOpenQuestions(e, [{ question: GOGO, answer: "Gogo is the 17th guest", source: "phone", confirmedBy: "Lerato" }], "staff", "t")).toThrow(/does not match the guest parties \(16 people\)/);
+    expect(() => resolveOpenQuestions(e, [{ question: GOGO, answer: "yes she is", source: "phone", confirmedBy: "Lerato" }], "staff", "t")).toThrow(/Include the confirmed total/);
+    const eight = { ...e, request: { ...e.request!, units: unitsFromExtraction({ adults: 8, couples: 4 }, "Mpho") } };
+    expect(() => resolveOpenQuestions(eight, [{ question: GOGO, answer: "gogo is included in the 16", source: "phone", confirmedBy: "Lerato" }], "staff", "t")).toThrow(/does not match the guest parties \(8 people\)/);
+  });
+
+  it("'all adults' cannot be recorded while the parties still contain children", () => {
+    const e = { ...pending(), request: { checkIn: "2026-11-21", checkOut: "2026-11-24", units: unitsFromExtraction({ adults: 2, children: 3 }, "x") } };
+    expect(() => resolveOpenQuestions(e, [{ question: AGES, answer: "all are adults", source: "phone", confirmedBy: "Lerato" }], "staff", "t")).toThrow(/include 3 child/);
   });
 });

@@ -99,7 +99,7 @@ export async function interpretEnquiry(sel: ProviderSelection, text: string, ctx
     check.missing.push(`dates: the guest wrote "${rel}" — ask for exact dates`);
   }
   const units = check.missing.includes("number of adults") ? [] : unitsFromExtraction(check.value, check.value.guestName ?? "Guest");
-  return { ...result, data: { check, units, openQuestions: openQuestionsFrom(check, text) } };
+  return { ...result, data: { check, units, openQuestions: openQuestionsFrom(check, text, units) } };
 }
 
 /** Money wording: currency symbols, amounts or price terms. Guest and room counts are allowed. */
