@@ -1,5 +1,7 @@
 # Activating real Meta AI
 
+**Verified 1 Nov 2026:** enquiry interpretation with `muse-spark-1.3` returned genuine live results. See [LIVE_META_VERIFICATION.md](LIVE_META_VERIFICATION.md).
+
 The app runs in **simulation mode** until you complete one of the two routes below. Nothing here costs money until a key is added
 and a live call is made. Please approve any spend first.
 
@@ -15,6 +17,9 @@ and a live call is made. Please approve any spend first.
    # META_MODEL_API_BASE_URL=https://api.meta.ai/v1
    # META_MODEL_API_MODEL=muse-spark-1.3
    AI_DAILY_CALL_LIMIT=100
+   AI_JSON_MODE=prompt          # the mode verified live on 1 Nov 2026
+   AI_MAX_OUTPUT_TOKENS=1200    # headroom for Muse Spark's hidden reasoning
+   AI_REASONING_EFFORT=minimal  # default for the Meta Model API
    ```
 3. Restart the app. The **Overview → AI provider** panel should show *Meta Model API · muse-spark-1.3* with no configuration issues.
 4. Tap **🔒 Owner**, enter the owner code (`OWNER_ACCESS_CODE`), then press **Test live connection**. This makes one small billable call.

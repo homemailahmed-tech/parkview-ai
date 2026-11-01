@@ -1,4 +1,4 @@
-import { validateExtraction, unitsFromExtraction, type ExtractionCheck } from "../enquiry/extraction";
+import { validateExtraction, unitsFromExtraction, headcountMentioned, type ExtractionCheck } from "../enquiry/extraction";
 import type { GuestUnit } from "../domain/types";
 import { MetaAIProvider } from "./metaProvider";
 import { SimulationProvider } from "./simulationProvider";
@@ -70,12 +70,34 @@ export async function interpretEnquiry(sel: ProviderSelection, text: string, ctx
   const result = await withFallback(sel, (p) => p.interpretEnquiry(text.slice(0, 4000), ctx));
   // Deterministic validation of whatever the model returned.
   const check = validateExtraction(result.data);
+  // Deterministic guard: never let an interpretation silently undercount the group in the message.
+  const mentioned = headcountMentioned(text);
+  const interpreted = (check.value.adults ?? 0) + (check.value.children ?? 0);
+  if (mentioned !== undefined && mentioned > interpreted) {
+    check.missing.push(`guest count to confirm: the message mentions ${mentioned} people but the interpretation has ${interpreted}`);
+  }
   const units = check.missing.includes("number of adults") ? [] : unitsFromExtraction(check.value, check.value.guestName ?? "Guest");
   return { ...result, data: { check, units } };
 }
 
+/** Money wording: currency symbols, amounts or price terms. Guest and room counts are allowed. */
+export function containsPriceTalk(text: string): boolean {
+  return /(\bR\s?\d|\bZAR\b|\brand\b|\$|€|£|\bper night\b|\bdiscount\b|\bdeposit\b|\bprice[sd]?\b|\bcost[s]?\b|\bcheaper\b|\bfree of charge\b)/i.test(text);
+}
+
 export async function explainOptions(sel: ProviderSelection, input: ExplainInput): Promise<AIResult<string>> {
-  return withFallback(sel, (p) => p.explainOptions(input));
+  const result = await withFallback(sel, (p) => p.explainOptions(input));
+  if (result.source !== "simulation" && containsPriceTalk(result.data)) {
+    // Prices may only come from the validated quote, never from AI wording.
+    return {
+      source: "simulation",
+      provider: "simulation",
+      label: sel.simulation.info.label,
+      data: await sel.simulation.explainOptions(input),
+      fallbackReason: "AI explanation mentioned prices and was replaced",
+    };
+  }
+  return result;
 }
 
 /** Rejects AI wording that contains figures, so prices can only come from the validated quote. */

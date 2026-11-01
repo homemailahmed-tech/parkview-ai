@@ -51,6 +51,7 @@ function int(v: unknown, field: string, issues: string[], max = MAX_GUESTS): num
 /** Coerces untrusted JSON (e.g. from an LLM) into a safe ExtractedEnquiry. */
 export function validateExtraction(raw: unknown): ExtractionCheck {
   const issues: string[] = [];
+  const missing0: string[] = [];
   const src = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const v: ExtractedEnquiry = {};
 
@@ -97,7 +98,12 @@ export function validateExtraction(raw: unknown): ExtractionCheck {
   const famAdults = (v.families ?? []).reduce((s, f) => s + f.adults, 0);
   const famChildren = (v.families ?? []).reduce((s, f) => s + f.children, 0);
   const committedAdults = famAdults + (v.couples ?? 0) * 2 + (v.drivers ?? 0) + (v.groupLeaders ?? 0);
-  if (v.adults === undefined && committedAdults > 0) v.adults = committedAdults;
+  if (v.adults === undefined && committedAdults > 0) {
+    // The total was not stated: count the described parts, but make staff confirm it,
+    // because roles (couples, drivers, leaders) are often only part of a larger group.
+    v.adults = committedAdults;
+    missing0.push(`confirmed total number of adults (not stated; ${committedAdults} counted from the roles described)`);
+  }
   if (v.adults !== undefined && committedAdults > v.adults) {
     issues.push(`Adult count (${v.adults}) was lower than couples/families/drivers described (${committedAdults}); using ${committedAdults}`);
     v.adults = committedAdults;
@@ -105,7 +111,7 @@ export function validateExtraction(raw: unknown): ExtractionCheck {
   if (v.children === undefined && famChildren > 0) v.children = famChildren;
   if (v.children !== undefined && famChildren > v.children) v.children = famChildren;
 
-  const missing: string[] = [];
+  const missing: string[] = [...missing0];
   if (!v.checkIn) missing.push("check-in date");
   if (!v.checkOut) missing.push("check-out date or number of nights");
   if (!v.adults) missing.push("number of adults");
@@ -186,4 +192,20 @@ export function unitsFromExtraction(ex: ExtractedEnquiry, guestName = "Guest"): 
 
 function rank(u: GuestUnit): number {
   return { couple: 0, family: 1, individual: 2, friends: 2, "group-leader": 3, driver: 4 }[u.kind];
+}
+
+const PEOPLE = "adults?|people|persons?|guests?|pax|players?|members?|learners?|students?|delegates?|pilgrims?|athletes?|singers?|participants?|ladies|men|women|kids|children|girls|boys|family members";
+
+/**
+ * Deterministic cross-check of the guest count against the original message: the largest
+ * "<number> <people word>" phrase in the text. Used to flag interpretations that undercount a group.
+ */
+export function headcountMentioned(text: string): number | undefined {
+  let best: number | undefined;
+  const re = new RegExp(`\\b(\\d{1,3})\\s+(?:[a-z-]+\\s+)?(?:${PEOPLE})\\b`, "gi");
+  for (const m of text.matchAll(re)) {
+    const n = Number(m[1]);
+    if (n > 0 && n <= 200 && (best === undefined || n > best)) best = n;
+  }
+  return best;
 }

@@ -23,7 +23,8 @@
 | ✅ Mission 1 addendum | Smart Maps & concierge with sample data; Google Places/Routes prepared behind a billing gate |
 | ✅ Mission 2 | Meta Model API (Muse Spark 1.3) + open-weight provider support, failure handling, spend cap, Smart Maps failure handling |
 | ✅ Mission 3 | Secure phone demo prep: demo access code, owner login, rate limits, security headers, Android checks, Vercel Hobby plan (awaiting owner approval to deploy) |
-| ⏳ Needs credentials | Live Meta calls (Meta Model API key, or open-weight host key) — run connection test and record results |
+| ✅ 1 Nov 2026 | Live Meta Model API: enquiry interpretation verified with `muse-spark-1.3` (2 requests, docs/LIVE_META_VERIFICATION.md); head-count guard and booking-safeguard tests added |
+| ⏳ Not yet live | Option explanations, greeting and concierge via Meta (same client; mocked tests only) |
 | ⏳ Needs owner approval | Google Maps Platform billing (Places + Routes) for live places, opening hours and travel times |
 | Next | Verified Halaal data source (e.g. certifying-body listings) — never infer certification |
 | Next | Live events feed; multilingual guest replies (Meta model); guest-facing concierge page/QR code |

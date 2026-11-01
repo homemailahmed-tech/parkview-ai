@@ -39,6 +39,7 @@ export interface AIEnv {
   AI_TIMEOUT_MS?: string;
   AI_MAX_RETRIES?: string;
   AI_MAX_OUTPUT_TOKENS?: string;
+  AI_REASONING_EFFORT?: string;
   AI_EXTRA_ALLOWED_MODELS?: string;
   AI_ALLOW_NON_META_DEV_MODEL?: string;
   AI_DAILY_CALL_LIMIT?: string;
@@ -70,6 +71,8 @@ export interface LiveAIConfig {
   timeoutMs: number;
   maxRetries: number;
   maxOutputTokens: number;
+  /** Sent as `reasoning_effort` when set. Defaults to "minimal" for the Meta Model API only. */
+  reasoningEffort?: string;
 }
 
 export interface ResolvedAIConfig {
@@ -127,6 +130,10 @@ export function resolveAIConfig(env: AIEnv): ResolvedAIConfig {
     maxRetries: int(env.AI_MAX_RETRIES, 1, 0, 3),
     maxOutputTokens: int(env.AI_MAX_OUTPUT_TOKENS, 800, 64, 4_000),
   };
+  // Muse Spark spends output tokens on hidden reasoning; "minimal" was verified live. "none" disables the field.
+  const effortRaw = t(env.AI_REASONING_EFFORT).toLowerCase();
+  const effort: string | null | undefined = effortRaw === "none" ? null : ["minimal", "low", "medium", "high"].includes(effortRaw) ? effortRaw : undefined;
+  if (effortRaw && effortRaw !== "none" && !effort) warnings.push(`AI_REASONING_EFFORT "${effortRaw}" ignored — use minimal, low, medium, high or none`);
   const extraAllowed = t(env.AI_EXTRA_ALLOWED_MODELS).split(",").map((s) => s.trim()).filter(Boolean);
   const allowDev = t(env.AI_ALLOW_NON_META_DEV_MODEL).toLowerCase() === "true";
 
@@ -137,7 +144,7 @@ export function resolveAIConfig(env: AIEnv): ResolvedAIConfig {
       const model = t(env.META_MODEL_API_MODEL) || META_MODEL_API_DEFAULT_MODEL;
       if (!/(^|\.)meta\.ai$/.test(safeHost(baseUrl))) warnings.push(`META_MODEL_API_BASE_URL points at ${safeHost(baseUrl)}, not Meta's api.meta.ai`);
       if (/contributor/i.test(model)) warnings.push(`"${model}" may allow Meta to use prompts and completions for training — avoid with real guest data`);
-      live = { provider, label: "Meta Model API", hostLabel: "Meta", baseUrl, apiKey: t(env.META_MODEL_API_KEY), model, ...shared };
+      live = { provider, label: "Meta Model API", hostLabel: "Meta", baseUrl, apiKey: t(env.META_MODEL_API_KEY), model, ...shared, reasoningEffort: effort === null ? undefined : effort ?? "minimal" };
       if (!live.apiKey) issues.push("META_MODEL_API_KEY is not set");
       break;
     }

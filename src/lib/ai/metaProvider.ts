@@ -10,7 +10,8 @@ import type { ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, I
  *    OpenRouter or other OpenAI-compatible hosts, and
  *  - an explicitly enabled NON-Meta development stand-in (labelled as such).
  *
- * Status: tested with mocked HTTP only — no live credentials yet.
+ * Status: the Meta Model API route (muse-spark-1.3) was verified with live calls on 1 Nov 2026
+ * (see docs/LIVE_META_VERIFICATION.md); other hosts are tested with mocked HTTP only.
  */
 export class MetaAIProvider implements HospitalityAIProvider {
   readonly info: ProviderInfo;
@@ -29,6 +30,7 @@ export class MetaAIProvider implements HospitalityAIProvider {
       maxRetries: cfg.maxRetries,
       maxOutputTokens: cfg.maxOutputTokens,
       jsonMode: cfg.jsonMode,
+      reasoningEffort: cfg.reasoningEffort,
       headers: cfg.headers,
       fetchImpl: deps.fetchImpl,
       sleep: deps.sleep,
@@ -44,7 +46,7 @@ export class MetaAIProvider implements HospitalityAIProvider {
       ],
       json,
     );
-    this.lastCall = { responseId: r.id, servedModel: r.model, latencyMs: r.latencyMs, attempts: r.attempts };
+    this.lastCall = { responseId: r.id, servedModel: r.model, usage: r.usage, latencyMs: r.latencyMs, attempts: r.attempts };
     return r.content;
   }
 
@@ -52,7 +54,8 @@ export class MetaAIProvider implements HospitalityAIProvider {
     const system = [
       `You extract booking details from guest messages for ${ctx.propertyName}. Today is ${ctx.today}.`,
       "Reply with ONE JSON object only (no prose), using these optional keys:",
-      "guestName (string), checkIn (YYYY-MM-DD), checkOut (YYYY-MM-DD), nights (int), adults (int), children (int),",
+      "guestName (string), checkIn (YYYY-MM-DD), checkOut (YYYY-MM-DD), nights (int),",
+      "adults (int, the TOTAL number of adults in the whole group, including players, members, drivers, coaches and leaders), children (int),",
       "couples (int, couples NOT inside a family who share a bed), families (array of {adults:int, children:int}),",
       "drivers (int, need own room), groupLeaders (int, need own room), wheelchairUsers (int), groundFloorGuests (int),",
       "separateBeds (bool), selfCatering (bool), notes (array of short strings).",

@@ -24,7 +24,7 @@ Built for the Meta Global AI Developer Hackathon 2026.
 npm install
 cp .env.example .env.local   # optional — defaults to simulation mode
 npm run dev                  # http://localhost:3000
-npm test                     # 142 automated tests
+npm test                     # 154 automated tests
 npm run typecheck
 npm run build
 ```
@@ -77,9 +77,10 @@ interpreting enquiries, explaining options, writing a greeting, and interpreting
 
 Deterministic code owns everything that matters:
 
-* **Extraction is validated** (`validateExtraction`) — bad dates, negative or fractional counts are dropped and listed as issues; missing info is listed.
+* **Extraction is validated** (`validateExtraction`) — only booking-request fields are kept (any claimed availability, price, status or payment is discarded); bad dates, negative or fractional counts are dropped and listed as issues; missing info is listed.
+* **Head-count guard:** if the AI leaves out the total, or its total is lower than a "14 adults" / "12 players" phrase in the message, staff are asked to confirm the number instead of quoting for fewer guests. (Found in a live Muse Spark test — see [`docs/LIVE_META_VERIFICATION.md`](docs/LIVE_META_VERIFICATION.md).)
 * **Allocation** never exceeds capacity, never double-books, respects couples/separate beds, wheelchair/ground-floor needs, private rooms for drivers/leaders, and keeps families together. Every option passes an independent `verifyOption` check before it is shown.
-* **Prices** are recomputed from the room table; `verifyQuoteTotals` rejects any inconsistent quote. AI wording containing figures is replaced.
+* **Prices** are recomputed from the room table; `verifyQuoteTotals` rejects any inconsistent quote. AI greetings containing figures, and AI option explanations that mention prices, are replaced.
 * **Workflow:** only the owner can approve; editing a quote voids approval; a booking cannot be confirmed without owner approval of the *current* quote version **and** a recorded (simulated) deposit; availability is re-checked at approval and confirmation.
 * **Maps:** distances shown are labelled straight-line; travel times only appear from a genuine routing provider; opening hours only from live data; Halaal status is always "not verified" unless an authoritative source confirms it.
 
@@ -133,8 +134,12 @@ Any failure falls back to simulation with the reason shown next to the output.
 **Telling real Meta AI from simulation:** an output is tagged **✓ Live Meta AI · \<route\> · \<model\>** only when that exact response came back
 from a Meta model. The header badge shows what is *configured*. The Overview shows the AI provider panel with configuration issues and warnings.
 
-**Status: implemented and tested with mocked HTTP (success, invalid key, timeout, 429/503, network failure, malformed output, JSON-mode fallback,
-budget cap). Not yet run against a live endpoint — no credentials available.** See [`docs/ACTIVATE_META_AI.md`](docs/ACTIVATE_META_AI.md).
+**Status (1 Nov 2026): enquiry interpretation verified live** against the Meta Model API with `muse-spark-1.3`: two authenticated requests on
+fictional enquiries, HTTP 200, served model `muse-spark-1.3`, valid JSON, about $0.006 in total. Details, request ids and token counts:
+[`docs/LIVE_META_VERIFICATION.md`](docs/LIVE_META_VERIFICATION.md). Option explanations, the quote greeting and the concierge use the same client
+but have **not** been run live yet; they are tested with mocked HTTP (success, invalid key, timeout, 429/503, network failure, malformed output,
+JSON-mode fallback, budget cap). Recommended live settings: `AI_JSON_MODE=prompt` (the verified path) and `AI_REASONING_EFFORT=minimal`
+(default for the Meta Model API: Muse Spark spends output tokens on hidden reasoning). See [`docs/ACTIVATE_META_AI.md`](docs/ACTIVATE_META_AI.md).
 
 ## AI Smart Maps & Travel Concierge
 
@@ -152,7 +157,7 @@ Halaal eateries and events are *fictional placeholders*. The guest house locatio
 
 ## Testing
 
-`npm test` runs 142 tests across: room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
+`npm test` runs 154 tests across: booking safeguards against hostile model output (availability, capacity, prices, approval, payment, head-count, private data), room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
 conflicting bookings, quotation totals & tamper detection, owner-approval and payment guards, invalid/missing enquiry information,
 Meta AI providers and switchboard (Meta Model API, Groq, OpenRouter, open-weight: config, model classes, mocked success/failure modes,
 free-only guard, catalogue check, budget, connection test), API routes (no key leakage), secret hygiene,

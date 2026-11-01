@@ -21,6 +21,11 @@ export interface ChatClientConfig {
   maxRetries: number;
   maxOutputTokens: number;
   jsonMode: JsonMode;
+  /**
+   * Optional `reasoning_effort` (e.g. "minimal"). Muse Spark is a reasoning model: hidden reasoning
+   * tokens count against max_tokens, so a low effort keeps short tasks within budget.
+   */
+  reasoningEffort?: string;
   /** Extra non-secret headers, e.g. OpenRouter app attribution. */
   headers?: Record<string, string>;
   fetchImpl?: typeof fetch;
@@ -33,10 +38,18 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface TokenUsage {
+  promptTokens?: number;
+  completionTokens?: number;
+  /** Hidden reasoning tokens (already included in completionTokens). */
+  reasoningTokens?: number;
+}
+
 export interface ChatResult {
   content: string;
   id?: string;
   model?: string;
+  usage?: TokenUsage;
   latencyMs: number;
   attempts: number;
 }
@@ -53,8 +66,9 @@ export async function chatCompletion(cfg: ChatClientConfig, messages: ChatMessag
   for (;;) {
     attempts++;
     try {
-      const body: Record<string, unknown> = { model: cfg.model, messages, temperature: 0.2 };
-      if (!minimal) body.max_tokens = cfg.maxOutputTokens;
+      // max_tokens is always sent, also on the minimal retry, so output (and cost) stays capped.
+      const body: Record<string, unknown> = { model: cfg.model, messages, temperature: 0.2, max_tokens: cfg.maxOutputTokens };
+      if (!minimal && cfg.reasoningEffort) body.reasoning_effort = cfg.reasoningEffort;
       if (useResponseFormat) body.response_format = { type: "json_object" };
       const res = await post(cfg, body);
       return { ...res, latencyMs: Date.now() - started, attempts };
@@ -100,15 +114,31 @@ async function post(cfg: ChatClientConfig, body: Record<string, unknown>): Promi
     const detail = await res.text().catch(() => "");
     throw errorFromStatus(res.status, redact(detail, cfg.apiKey));
   }
-  let parsed: { id?: string; model?: string; choices?: { message?: { content?: unknown } }[] };
+  let parsed: {
+    id?: string;
+    model?: string;
+    choices?: { message?: { content?: unknown }; finish_reason?: string }[];
+    usage?: { prompt_tokens?: number; completion_tokens?: number; completion_tokens_details?: { reasoning_tokens?: number } };
+  };
   try {
     parsed = await res.json();
   } catch {
     throw new AIProviderError("bad_response", "response was not JSON");
   }
   const content = parsed.choices?.[0]?.message?.content;
-  if (typeof content !== "string" || !content.trim()) throw new AIProviderError("bad_response", "response contained no message text");
-  return { content, id: parsed.id, model: parsed.model };
+  if (typeof content !== "string" || !content.trim()) {
+    const why = parsed.choices?.[0]?.finish_reason === "length" ? " (output token limit reached, e.g. by hidden reasoning)" : "";
+    throw new AIProviderError("bad_response", `response contained no message text${why}`);
+  }
+  const u = parsed.usage;
+  const usage: TokenUsage | undefined = u
+    ? { promptTokens: num(u.prompt_tokens), completionTokens: num(u.completion_tokens), reasoningTokens: num(u.completion_tokens_details?.reasoning_tokens) }
+    : undefined;
+  return { content, id: parsed.id, model: parsed.model, usage };
+}
+
+function num(v: unknown): number | undefined {
+  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
 }
 
 /** Make sure an echoed key never reaches logs or the UI. */

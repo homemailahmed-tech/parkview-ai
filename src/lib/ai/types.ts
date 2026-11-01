@@ -30,6 +30,8 @@ export interface LiveCallMeta {
   responseId?: string;
   /** Model name reported by the server, if any. */
   servedModel?: string;
+  /** Token counts reported by the server, if any (used for cost tracking). */
+  usage?: { promptTokens?: number; completionTokens?: number; reasoningTokens?: number };
   latencyMs: number;
   attempts: number;
 }

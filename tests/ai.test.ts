@@ -254,7 +254,7 @@ describe("failures fall back to clearly labelled simulation", () => {
     const r = await interpretEnquiry(selection(fetchImpl), "2 adults", ctx);
     expect(calls[0].body.response_format).toBeDefined();
     expect(calls[1].body.response_format).toBeUndefined();
-    expect(calls[1].body.max_tokens).toBeUndefined();
+    expect(calls[1].body.max_tokens).toBe(800); // output stays capped on the retry
     expect(r.source).toBe("meta");
   });
 
