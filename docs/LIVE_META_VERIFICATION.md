@@ -148,3 +148,29 @@ Replayed offline in `tests/liveReplay.test.ts`:
   - explanations always include accessibility (appended by the app when the AI omits it, as it did here);
   - the greeting prompt was improved.
 - **Not yet verified live:** the improved prompts. They are tested offline with these captured replies.
+
+## Stage 5 live tests (1 Nov 2026)
+
+- **Approval:** at most 8 calls and US$0.045, voice included; no retries. Caps enforced in the app ledger (8 calls, US$0.045, 7 Muse Spark, 1 voice).
+- **Purpose:** re-test the Stage 4 weak points after the review fixes. Stage 4 evidence was not repeated without need.
+- **Evidence:** `docs/evidence/stage5-ledger.json` (response ids, tokens, cost and the model output of every call) and `docs/evidence/stage5-ui-checks.json`.
+
+| # | Test | Response id | Tokens in / out (reasoning) | US$ | Result |
+|---|---|---|---|---|---|
+| 1 | H-3 Afrikaans family | chatcmpl-01a196fc-7003… | 475 / 594 (491) | 0.00312 | **PASS**: dates, 3 adults + 3 children, self-catering and the stairs need all correct; the grandmother was put in her own party |
+| 2 | H-2 choir correction | chatcmpl-01a196fd-0d9a… | 489 / 641 (524) | 0.00334 | **PASS with gap**: gogo and ages questions asked; adults left unstated, so the parties held 8 (provisional, count question open) |
+| 3 | H-1 netball, revised prompt | chatcmpl-01a196fd-960a… | 469 / 653 (542) | 0.00336 | **PASS**: did not guess the girls' ages; 3 questions |
+| 4 | Clarifying reply | chatcmpl-01a196fd-ba2a… | 243 / 282 (212) | 0.00150 | **PASS**: "Sawubona Thandeka…", one question per topic, no duplicates |
+| 5 | Choir (Lindiwe) demo enquiry | chatcmpl-01a196fd-e3cb… | 463 / 482 (377) | 0.00263 | **PASS**: correct, and asked "Does the total of 14 include the bus driver?" |
+| 6 | Option explanation | chatcmpl-01a196fe-0a76… | 716 / 700 (577) | 0.00387 | **PASS**: states the wheelchair-accessible ground-floor room |
+| 7 | Quote greeting | chatcmpl-01a196fe-2e92… | 174 / 221 (182) | 0.00116 | **PASS**: no figures, improved wording |
+| 8 | Voice (human recording) | — | — | 0 | **NOT RUN**: no human recording was available; the slot was not spent |
+
+**Total: 7 calls, US$0.01897.** All runs to date: 17 genuine calls (2 + 8 + 7), about US$0.041.
+
+**Gaps found live and fixed in code (no booking-engine change):**
+- With several guest parties, the app assigns an access need to one party. In H-3 that was the family, not the grandmother. Staff must now confirm who uses the wheelchair or cannot use stairs (`openQuestionsFrom`, tested in `tests/stage5Live.test.ts`).
+- A head-count answer could have been recorded while the parties held 8 people. A count answer must now state a total that matches the guest parties, and "all adults" is refused while the parties contain children (`resolveOpenQuestions`, `tests/resolution.test.ts`).
+- With the revised prompt the model stopped guessing ages, so allocation was no longer blocked. Unstated ages now always block allocation.
+
+**Voice:** still only tested on synthetic English speech (Stage 4). No claim is made for human voices, South African accents, isiZulu or Afrikaans speech.
