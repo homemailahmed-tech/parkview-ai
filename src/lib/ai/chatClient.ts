@@ -1,4 +1,5 @@
 import { AIProviderError, errorFromStatus } from "./errors";
+import { chatWorstUSD, PRICES, reserve, settle, type SpendConfig } from "./spendLedger";
 
 /**
  * Minimal Chat Completions client for OpenAI-compatible endpoints:
@@ -26,6 +27,8 @@ export interface ChatClientConfig {
    * tokens count against max_tokens, so a low effort keeps short tasks within budget.
    */
   reasoningEffort?: string;
+  /** Optional hard spend cap (approved live runs): checked before every HTTP request. */
+  spend?: SpendConfig;
   /** Extra non-secret headers, e.g. OpenRouter app attribution. */
   headers?: Record<string, string>;
   fetchImpl?: typeof fetch;
@@ -90,6 +93,26 @@ export async function chatCompletion(cfg: ChatClientConfig, messages: ChatMessag
 }
 
 async function post(cfg: ChatClientConfig, body: Record<string, unknown>): Promise<Omit<ChatResult, "latencyMs" | "attempts">> {
+  const entry = cfg.spend ? reserve(cfg.spend, "chat", chatWorstUSD(JSON.stringify(body.messages ?? []).length, Number(body.max_tokens) || cfg.maxOutputTokens)) : undefined;
+  try {
+    const r = await postOnce(cfg, body);
+    if (cfg.spend && entry) {
+      const u = r.usage;
+      const cost = u?.promptTokens !== undefined || u?.completionTokens !== undefined ? (u.promptTokens ?? 0) * PRICES.chatIn + (u.completionTokens ?? 0) * PRICES.chatOut : entry.worstUSD;
+      settle(cfg.spend, entry.n, { status: 200, costUSD: cost, responseId: r.id, model: r.model, usage: u });
+    }
+    return r;
+  } catch (e) {
+    if (cfg.spend && entry) {
+      const status = e instanceof AIProviderError ? e.status : undefined;
+      // A rejected request (4xx) is not processed; anything else keeps its worst-case reservation.
+      settle(cfg.spend, entry.n, { status, costUSD: status && status < 500 ? 0 : entry.worstUSD, note: (e as Error).message.slice(0, 160) });
+    }
+    throw e;
+  }
+}
+
+async function postOnce(cfg: ChatClientConfig, body: Record<string, unknown>): Promise<Omit<ChatResult, "latencyMs" | "attempts">> {
   const doFetch = cfg.fetchImpl ?? fetch;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), cfg.timeoutMs);

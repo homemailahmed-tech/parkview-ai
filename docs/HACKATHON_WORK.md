@@ -32,7 +32,10 @@ Run `git log --reverse --format='%ad  %s' --date=iso` to see every commit.
 | WhatsApp | **Simulated**: the app produces copy-ready text; no WhatsApp API |
 | Payments | **Simulated** deposit records only |
 
-In the app, every AI output is labelled **✓ Live Meta AI · …** or **SIMULATION**.
+In the app, every AI output is labelled:
+- **✓ Live Meta AI**: only for a response from Meta's own endpoint (`https://api.meta.ai`);
+- **SIMULATION**: rule-based fallback, including after a failed live call;
+- **LOCAL TEST — MOCK RESPONSE**: any local or non-Meta test endpoint, even one imitating Meta's API.
 
 ## How it was built
 

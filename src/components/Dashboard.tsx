@@ -23,7 +23,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 
 export interface AIStatus {
   ai: {
-    kind: "simulation" | "meta" | "dev-model";
+    kind: "simulation" | "meta" | "dev-model" | "test";
     provider: "simulation" | "meta-model-api" | "groq" | "openrouter" | "open-weight";
     label: string;
     modelClass: "meta-model-api" | "meta-open-weight" | "non-meta-dev" | null;
@@ -222,6 +222,13 @@ function OwnerLoginDialog({ enabled, onClose }: { enabled: boolean; onClose: () 
 
 function AIModeBadge({ status }: { status: AIStatus | null }) {
   if (!status) return <Badge>AI status…</Badge>;
+  if (status.ai.kind === "test") {
+    return (
+      <Badge tone="red" className="max-w-[9rem] truncate sm:max-w-[18rem]">
+        <span title="Requests go to a local or non-Meta test endpoint — responses are NOT Meta AI">LOCAL TEST</span>
+      </Badge>
+    );
+  }
   if (status.ai.kind === "dev-model") {
     return (
       <Badge tone="violet" className="max-w-[9rem] truncate sm:max-w-[18rem]">

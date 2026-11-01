@@ -6,7 +6,7 @@ import { Badge, Button } from "./ui";
 
 type Phase = "idle" | "recording" | "sending" | "done" | "error";
 
-interface TranscribeResponse { ok: boolean; source: "meta" | "none"; model?: string; transcript?: string; latencyMs?: number; reason?: string; error?: string }
+interface TranscribeResponse { ok: boolean; source: "meta" | "test" | "none"; model?: string; transcript?: string; latencyMs?: number; reason?: string; error?: string }
 
 /**
  * Push-to-talk dictation: microphone → 16 kHz mono WAV in the browser → server → Meta Muse Voice
@@ -18,6 +18,7 @@ export function VoiceDictation({ onTranscript }: { onTranscript: (text: string) 
   const [secs, setSecs] = useState(0);
   const [lang, setLang] = useState<"auto" | "english">("auto");
   const [info, setInfo] = useState<string>("");
+  const [source, setSource] = useState<"meta" | "test" | "none">("none");
   const rec = useRef<{ stream: MediaStream; ctx: AudioContext; node: ScriptProcessorNode; chunks: Float32Array[]; rate: number; timer: number; started: number } | null>(null);
 
   useEffect(() => () => cleanup(), []);
@@ -34,6 +35,7 @@ export function VoiceDictation({ onTranscript }: { onTranscript: (text: string) 
 
   async function start() {
     setInfo("");
+    setSource("none");
     if (!navigator.mediaDevices?.getUserMedia) { setPhase("error"); setInfo("This browser cannot record audio. Type the message instead."); return; }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
@@ -77,7 +79,12 @@ export function VoiceDictation({ onTranscript }: { onTranscript: (text: string) 
       if (!res.ok || !body.ok || !body.transcript) { setPhase("error"); setInfo(body.reason ?? body.error ?? "Transcription failed. Type the message instead."); return; }
       onTranscript(body.transcript);
       setPhase("done");
-      setInfo(`✓ Live Meta AI · Muse Voice Transcribe · ${body.model ?? ""}${body.latencyMs ? ` · ${(body.latencyMs / 1000).toFixed(1)} s` : ""} — check and edit the text before adding.`);
+      setSource(body.source);
+      setInfo(
+        body.source === "meta"
+          ? `✓ Live Meta AI · Muse Voice Transcribe · ${body.model ?? ""}${body.latencyMs ? ` · ${(body.latencyMs / 1000).toFixed(1)} s` : ""} — check and edit the text before adding.`
+          : "LOCAL TEST — MOCK RESPONSE · not Meta AI. This text did not come from Meta's speech recognition.",
+      );
     } catch (e) {
       setPhase("error");
       setInfo(`Transcription request failed (${(e as Error).message}). Type the message instead.`);
@@ -100,7 +107,11 @@ export function VoiceDictation({ onTranscript }: { onTranscript: (text: string) 
         </select>
         <Badge>Meta Muse Voice Transcribe</Badge>
       </div>
-      {info && <p className={phase === "error" ? "text-xs text-red-700" : "text-xs text-emerald-800"} data-testid="voice-info">{info}</p>}
+      {info && (
+        <p className={phase === "error" || (phase === "done" && source !== "meta") ? "text-xs font-medium text-red-700" : "text-xs text-emerald-800"} data-testid="voice-info" data-source={phase === "done" ? source : "none"}>
+          {info}
+        </p>
+      )}
     </div>
   );
 }

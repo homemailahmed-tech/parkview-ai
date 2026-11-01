@@ -11,8 +11,9 @@ import type { AllocationOption, ISODate } from "../domain/types";
  * "meta"      — a live response from an eligible Meta model.
  * "dev-model" — a live response from a NON-Meta development stand-in (never shown as Meta AI).
  * "simulation" — rule-based, no model at all.
+ * "test"      — a local or non-Meta test endpoint (e.g. a mock imitating Meta's API). NEVER Meta AI.
  */
-export type ProviderKind = "simulation" | "meta" | "dev-model";
+export type ProviderKind = "simulation" | "meta" | "dev-model" | "test";
 export type ProviderId = "simulation" | "meta-model-api" | "groq" | "openrouter" | "open-weight";
 
 export interface ProviderInfo {

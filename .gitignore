@@ -155,3 +155,7 @@ docs/competition/video-tools/tmp-*/
 docs/competition/video-tools/*.log
 docs/competition/video-tools/*ledger*.json
 docs/competition/video-tools/audio/
+docs/competition/video-tools/e2e/*.png
+docs/competition/video-tools/e2e/*.json
+docs/competition/video-tools/e2e/*.wav
+docs/competition/video-tools/live-evidence.json

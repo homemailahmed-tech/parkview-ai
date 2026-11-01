@@ -8,6 +8,7 @@ import { CallBudget, sharedBudget } from "./budget";
 import type { AIResult, ClarifyInput, ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, InterpretContext } from "./types";
 import { violatesClarificationRules } from "./clarify";
 import { transcribeWav, VOICE_MODEL, type TranscribeOptions } from "./voice";
+import { endpointTrust } from "./endpoint";
 import { validateConciergeIntent, type ConciergeIntent } from "../maps/concierge";
 
 export type { AIEnv } from "./config";
@@ -178,8 +179,12 @@ export async function connectionTest(sel: ProviderSelection): Promise<{ ok: bool
 
 export interface TranscribeResult {
   ok: boolean;
-  /** "meta" only for a genuine Muse Voice Transcribe response. There is no simulated transcription. */
-  source: "meta" | "none";
+  /**
+   * "meta" only for a genuine Muse Voice Transcribe response from Meta's own endpoint;
+   * "test" for a local or non-Meta test endpoint (e.g. a mock); "none" when nothing was transcribed.
+   * There is no simulated transcription.
+   */
+  source: "meta" | "test" | "none";
   model?: string;
   transcript?: string;
   audioDurationMs?: number;
@@ -200,7 +205,7 @@ export async function transcribeSpeech(sel: ProviderSelection, wav: Uint8Array, 
   if (sel.budget && !sel.budget.take()) return { ok: false, source: "none", reason: "Daily live-call limit (AI_DAILY_CALL_LIMIT) reached — type the message instead." };
   try {
     const t = await transcribeWav(live, wav, opts, fetchImpl);
-    return { ok: true, source: "meta", model: VOICE_MODEL, ...t };
+    return { ok: true, source: endpointTrust(live.baseUrl) === "meta-official" ? "meta" : "test", model: VOICE_MODEL, ...t };
   } catch (e) {
     return { ok: false, source: "none", reason: `Muse Voice Transcribe failed (${describeError(e)})` };
   }

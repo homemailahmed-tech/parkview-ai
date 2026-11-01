@@ -4,7 +4,8 @@ export type AIErrorCode =
   | "timeout"
   | "unavailable" // 5xx or network failure
   | "bad_request" // 400 / 404 / 422 — request rejected
-  | "bad_response"; // response not in the expected shape
+  | "bad_response" // response not in the expected shape
+  | "budget"; // local spend cap for an approved live run reached — no request sent
 
 export class AIProviderError extends Error {
   constructor(

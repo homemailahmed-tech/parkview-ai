@@ -1,6 +1,7 @@
 import { chatCompletion, type ChatClientConfig } from "./chatClient";
 import type { LiveAIConfig } from "./config";
 import { AIProviderError } from "./errors";
+import { endpointTrust } from "./endpoint";
 import type { ClarifyInput, ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, InterpretContext, LiveCallMeta, ProviderInfo } from "./types";
 
 /**
@@ -21,7 +22,12 @@ export class MetaAIProvider implements HospitalityAIProvider {
 
   constructor(cfg: LiveAIConfig, deps: { fetchImpl?: typeof fetch; sleep?: (ms: number) => Promise<void> } = {}) {
     const modelClass = cfg.modelClass ?? (cfg.provider === "meta-model-api" ? "meta-model-api" : "meta-open-weight");
-    this.info = { kind: modelClass === "non-meta-dev" ? "dev-model" : "meta", id: cfg.provider, label: cfg.label, model: cfg.model, host: cfg.hostLabel, modelClass };
+    // Labels follow where requests really go: a local or non-Meta endpoint is a TEST endpoint, never "Live Meta AI".
+    const trust = endpointTrust(cfg.baseUrl);
+    const isTest = trust === "local" || (cfg.provider === "meta-model-api" && trust !== "meta-official");
+    this.info = isTest
+      ? { kind: "test", id: cfg.provider, label: `LOCAL TEST endpoint (${safeHost(cfg.baseUrl)})`, model: cfg.model, host: safeHost(cfg.baseUrl), modelClass }
+      : { kind: modelClass === "non-meta-dev" ? "dev-model" : "meta", id: cfg.provider, label: cfg.label, model: cfg.model, host: cfg.hostLabel, modelClass };
     this.client = {
       baseUrl: cfg.baseUrl,
       apiKey: cfg.apiKey,
@@ -31,6 +37,7 @@ export class MetaAIProvider implements HospitalityAIProvider {
       maxOutputTokens: cfg.maxOutputTokens,
       jsonMode: cfg.jsonMode,
       reasoningEffort: cfg.reasoningEffort,
+      spend: cfg.spend,
       headers: cfg.headers,
       fetchImpl: deps.fetchImpl,
       sleep: deps.sleep,
@@ -106,6 +113,14 @@ export class MetaAIProvider implements HospitalityAIProvider {
       "Never state distances, travel times, opening hours or Halaal certification.",
     ].join("\n");
     return parseJsonObject(await this.chat(system, input.question, true));
+  }
+}
+
+function safeHost(u: string): string {
+  try {
+    return new URL(u).host;
+  } catch {
+    return "unknown host";
   }
 }
 

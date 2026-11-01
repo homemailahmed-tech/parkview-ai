@@ -1,5 +1,7 @@
 import type { LiveAIConfig } from "./config";
 import { AIProviderError, errorFromStatus } from "./errors";
+import { PRICES, reserve, settle } from "./spendLedger";
+import { inspectWav } from "../voice/wav";
 
 /**
  * Muse Voice Transcribe 1.0 — file endpoint, per Meta's model cookbook
@@ -25,7 +27,25 @@ export interface Transcript {
   latencyMs: number;
 }
 
-export async function transcribeWav(cfg: Pick<LiveAIConfig, "baseUrl" | "apiKey">, wav: Uint8Array, opts: TranscribeOptions = {}, fetchImpl: typeof fetch = fetch): Promise<Transcript> {
+export async function transcribeWav(cfg: Pick<LiveAIConfig, "baseUrl" | "apiKey" | "spend">, wav: Uint8Array, opts: TranscribeOptions = {}, fetchImpl: typeof fetch = fetch): Promise<Transcript> {
+  // Hard spend cap (approved live runs): reserve this upload at its worst-case cost first.
+  const info = inspectWav(wav);
+  const worst = ("error" in info ? 60_000 : info.durationMs) * PRICES.audioPerMs;
+  const entry = cfg.spend ? reserve(cfg.spend, "voice", worst) : undefined;
+  try {
+    const t = await transcribeOnce(cfg, wav, opts, fetchImpl);
+    if (cfg.spend && entry) settle(cfg.spend, entry.n, { status: 200, costUSD: (t.audioDurationMs ?? ("error" in info ? 60_000 : info.durationMs)) * PRICES.audioPerMs, responseId: t.sessionId, model: VOICE_MODEL, audioDurationMs: t.audioDurationMs });
+    return t;
+  } catch (e) {
+    if (cfg.spend && entry) {
+      const status = e instanceof AIProviderError ? e.status : undefined;
+      settle(cfg.spend, entry.n, { status, costUSD: status && status < 500 ? 0 : worst, note: (e as Error).message.slice(0, 160) });
+    }
+    throw e;
+  }
+}
+
+async function transcribeOnce(cfg: Pick<LiveAIConfig, "baseUrl" | "apiKey">, wav: Uint8Array, opts: TranscribeOptions, fetchImpl: typeof fetch): Promise<Transcript> {
   const request: Record<string, unknown> = { mode: "PUSH_TO_TALK", model: VOICE_MODEL, audioEncoding: "WAV" };
   if (opts.languageBias?.length) request.languageBias = opts.languageBias;
   if (opts.keywords?.length) request.keywords = opts.keywords.slice(0, 20);

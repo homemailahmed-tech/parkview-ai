@@ -1,3 +1,4 @@
+import type { SpendConfig } from "./spendLedger";
 import { checkModelEligibility, classifyModel, type LiveProviderId, type ModelClass } from "./eligibility";
 import type { JsonMode } from "./chatClient";
 
@@ -40,6 +41,9 @@ export interface AIEnv {
   AI_MAX_RETRIES?: string;
   AI_MAX_OUTPUT_TOKENS?: string;
   AI_REASONING_EFFORT?: string;
+  AI_SPEND_LEDGER?: string;
+  AI_SPEND_MAX_CALLS?: string;
+  AI_SPEND_MAX_USD?: string;
   AI_EXTRA_ALLOWED_MODELS?: string;
   AI_ALLOW_NON_META_DEV_MODEL?: string;
   AI_DAILY_CALL_LIMIT?: string;
@@ -73,6 +77,8 @@ export interface LiveAIConfig {
   maxOutputTokens: number;
   /** Sent as `reasoning_effort` when set. Defaults to "minimal" for the Meta Model API only. */
   reasoningEffort?: string;
+  /** Hard spend cap for approved live runs (AI_SPEND_LEDGER / AI_SPEND_MAX_CALLS / AI_SPEND_MAX_USD). */
+  spend?: SpendConfig;
 }
 
 export interface ResolvedAIConfig {
@@ -129,6 +135,9 @@ export function resolveAIConfig(env: AIEnv): ResolvedAIConfig {
     timeoutMs: int(env.AI_TIMEOUT_MS, 20_000, 2_000, 120_000),
     maxRetries: int(env.AI_MAX_RETRIES, 1, 0, 3),
     maxOutputTokens: int(env.AI_MAX_OUTPUT_TOKENS, 800, 64, 4_000),
+    spend: t(env.AI_SPEND_LEDGER)
+      ? { file: t(env.AI_SPEND_LEDGER), maxCalls: int(env.AI_SPEND_MAX_CALLS, 0, 0, 100), maxUSD: Math.max(0, Number(env.AI_SPEND_MAX_USD) || 0) }
+      : undefined,
   };
   // Muse Spark spends output tokens on hidden reasoning; "minimal" was verified live. "none" disables the field.
   const effortRaw = t(env.AI_REASONING_EFFORT).toLowerCase();
