@@ -4,7 +4,7 @@ Evidence for every advertised capability (status on 1 Nov 2026). Live evidence a
 
 **Categories:**
 - **META LIVE**: tested with genuine calls to Meta's API (`https://api.meta.ai`), with recorded response ids.
-- **DETERMINISTIC**: ordinary code, covered by automated tests (`npm test`, 223 tests).
+- **DETERMINISTIC**: ordinary code, covered by automated tests (`npm test`, 233 tests).
 - **SIMULATION**: a stand-in, always labelled in the app.
 - **NOT BUILT**: roadmap only.
 

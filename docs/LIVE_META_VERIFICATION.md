@@ -172,5 +172,8 @@ Replayed offline in `tests/liveReplay.test.ts`:
 - With several guest parties, the app assigns an access need to one party. In H-3 that was the family, not the grandmother. Staff must now confirm who uses the wheelchair or cannot use stairs (`openQuestionsFrom`, tested in `tests/stage5Live.test.ts`).
 - A head-count answer could have been recorded while the parties held 8 people. A count answer must now state a total that matches the guest parties, and "all adults" is refused while the parties contain children (`resolveOpenQuestions`, `tests/resolution.test.ts`).
 - With the revised prompt the model stopped guessing ages, so allocation was no longer blocked. Unstated ages now always block allocation.
+- **Found afterwards (quote integrity):** in the same choir UI run, once the count question was answered, an 8-guest quote became approvable. Submitting, approval, sending and confirmation now re-check the quote against the current guest parties and dates (`quoteStaleReasons`, `tests/quoteIntegrity.test.ts`, `docs/evidence/quote-integrity-ui-check.json`). Not re-run live.
+
+**Model accuracy, stated plainly:** Muse Spark miscounted guests in three live runs (2 of 14, 1 of 15, 8 of 16). The app's guards flagged the last two live; the fixes listed above came after the runs.
 
 **Voice:** still only tested on synthetic English speech (Stage 4). No claim is made for human voices, South African accents, isiZulu or Afrikaans speech.
