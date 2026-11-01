@@ -197,10 +197,13 @@ describe("deployment hygiene", () => {
     expect(gi).toMatch(/^!\.env\.example$/m);
   });
 
-  it("contains no reference to the real guest house or its systems", () => {
+  it("names only the fictional demo property", () => {
     for (const f of files(path.join(root, "src"))) {
+      const text = readFileSync(f, "utf8");
       // Standalone region code only — "ukzn" (University of KwaZulu-Natal) is a legitimate concierge keyword.
-      expect(readFileSync(f, "utf8"), f).not.toMatch(new RegExp(Buffer.from("XGJLWk5cYnxQYXJrIFZpZXcgKEd1ZXN0IEhvdXNlfFRyaXBsZSk=", "base64").toString("utf8"), "i") /* real property name, encoded */);
+      expect(text, f).not.toMatch(new RegExp(Buffer.from("XGJLWk5cYg==", "base64").toString("utf8")));
+      // Any "<Name> Guest House" must be the fictional demo property.
+      for (const m of text.matchAll(/\b((?:[A-Z][\w'-]+ ){1,3})Guest House\b/g)) expect(m[0], f).toBe("Parkside Demo Guest House");
     }
   });
 });
