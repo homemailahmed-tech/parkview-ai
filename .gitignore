@@ -159,3 +159,4 @@ docs/competition/video-tools/e2e/*.png
 docs/competition/video-tools/e2e/*.json
 docs/competition/video-tools/e2e/*.wav
 docs/competition/video-tools/live-evidence.json
+.next-*/

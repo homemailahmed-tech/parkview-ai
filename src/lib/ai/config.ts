@@ -42,6 +42,7 @@ export interface AIEnv {
   AI_MAX_OUTPUT_TOKENS?: string;
   AI_REASONING_EFFORT?: string;
   AI_SPEND_LEDGER?: string;
+  AI_REPLAY_FILE?: string;
   AI_SPEND_MAX_CALLS?: string;
   AI_SPEND_MAX_USD?: string;
   AI_SPEND_MAX_CHAT?: string;

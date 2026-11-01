@@ -70,6 +70,8 @@ export class MetaAIProvider implements HospitalityAIProvider {
       "drivers (int, need own room), groupLeaders (int, need own room), wheelchairUsers (int), groundFloorGuests (int),",
       "separateBeds (bool), selfCatering (bool), notes (array of short strings, in English),",
       "clarifications (array of short English questions staff must ask because something is missing, uncertain or contradictory, e.g. 'Two nights or three?').",
+      "Only ask what changes the booking (dates, nights, head-count, adults vs children, stated access needs); one question per topic; no questions about preferences the guest did not mention.",
+      "If the guest does not say whether people are adults or children (e.g. 'girls', 'players'), do NOT guess: leave adults/children out for them and ask.",
       "Omit anything the guest did not state. Never invent dates or numbers: if unsure, leave the field out and add a clarification. Do not quote prices or promise availability.",
     ].join("\n");
     return parseJsonObject(await this.chat(system, text, true));
@@ -83,13 +85,15 @@ export class MetaAIProvider implements HospitalityAIProvider {
     }));
     const system =
       "You explain room-allocation options to a guest-house owner in 3-5 short sentences. Use only the facts given. " +
+      "If accessibility facts are given, say how each accessibility need is met (for example the wheelchair user's accessible ground-floor room). " +
       "Do not mention or change any prices, capacities or availability — those are shown separately.";
-    return (await this.chat(system, JSON.stringify({ guest: input.guestName, options: facts, comparison: input.comparison }), false)).trim();
+    return (await this.chat(system, JSON.stringify({ guest: input.guestName, options: facts, comparison: input.comparison, accessibility: input.accessibility ?? [] }), false)).trim();
   }
 
   async draftQuoteIntro(input: DraftInput): Promise<string> {
     const system =
-      "Write a warm 2-3 sentence greeting for a guest-house quotation sent on WhatsApp. " +
+      "Write a warm 2-3 sentence greeting for a guest-house quotation sent on WhatsApp. Thank the guest by name and say that the " +
+      "proposed room arrangement and quotation follow below, for their review. Do not say they chose or asked for a specific option. " +
       "Do NOT include any prices, totals, dates, room counts or promises — the validated quotation follows your text.";
     return (await this.chat(system, JSON.stringify(input), false)).trim();
   }

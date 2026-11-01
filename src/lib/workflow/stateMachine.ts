@@ -80,6 +80,7 @@ export interface TransitionContext {
 
 export function canTransition(enquiry: Enquiry, type: WorkflowAction["type"], actor: Actor): boolean {
   const rule = ALLOWED[type];
+  if (NEEDS_NO_OPEN_QUESTIONS.includes(type) && enquiry.openQuestions?.length) return false;
   return rule.from.includes(enquiry.status) && rule.actors.includes(actor);
 }
 
@@ -98,8 +99,14 @@ function assertRoomsFree(quote: Quote, ctx: TransitionContext, ignoreQuoteId?: s
   }
 }
 
+/** Actions that make a booking binding: blocked while any open question is unresolved. */
+const NEEDS_NO_OPEN_QUESTIONS: WorkflowAction["type"][] = ["owner_approve", "send_quote", "confirm"];
+
 export function transition(enquiry: Enquiry, action: WorkflowAction, ctx: TransitionContext): Enquiry {
   const rule = ALLOWED[action.type];
+  if (NEEDS_NO_OPEN_QUESTIONS.includes(action.type) && enquiry.openQuestions?.length) {
+    throw new WorkflowError(`Provisional: ${enquiry.openQuestions.length} open question(s) must be resolved with the guest first (${enquiry.openQuestions.map((q) => q.text).join("; ")})`);
+  }
   if (!rule.from.includes(enquiry.status)) {
     throw new WorkflowError(`Cannot ${action.type.replace(/_/g, " ")} while status is "${STATUS_LABEL[enquiry.status]}"`);
   }

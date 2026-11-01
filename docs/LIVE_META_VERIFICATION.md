@@ -137,3 +137,14 @@ Replayed offline in `tests/liveReplay.test.ts`:
 - H-3 prices come only from the room table, and an AI or system actor cannot approve.
 - C1, E1 and G1 contain no prices or availability claims.
 - No live answer bypassed a guard.
+
+## Follow-up after the owner's review (no new calls)
+
+- **H-1 ages:** the reply listed 12 children while also asking whether they are children. The app now treats unstated ages as open, and blocks room allocation until they are confirmed.
+- **H-2 gogo:** the 16-person allocation is **provisional**. Owner approval, sending and confirmation are locked until the question is resolved.
+- **H-3:** the allocated room is the ground-floor self-catering apartment. The adult on a bunk is on the **bottom** bunk and a child is on top, so no climbing is needed. A top-bunk case would be flagged for owner review.
+- **Quality:**
+  - guest questions are de-duplicated and limited to booking-relevant topics;
+  - explanations always include accessibility (appended by the app when the AI omits it, as it did here);
+  - the greeting prompt was improved.
+- **Not yet verified live:** the improved prompts. They are tested offline with these captured replies.

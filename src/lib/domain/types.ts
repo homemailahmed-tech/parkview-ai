@@ -94,6 +94,8 @@ export interface StayRequest {
   checkIn: ISODate;
   checkOut: ISODate;
   units: GuestUnit[];
+  /** The guest asked for self-catering (checked after allocation; never assumed met). */
+  selfCatering?: boolean;
 }
 
 export interface RoomAssignment {
@@ -224,5 +226,20 @@ export interface Enquiry {
   payment?: PaymentRecord;
   events: WorkflowEvent[];
   /** How the enquiry was interpreted, for transparency in the UI. */
-  interpretedBy?: "simulation" | "meta" | "dev-model" | "test" | "manual";
+  interpretedBy?: "simulation" | "meta" | "dev-model" | "test" | "replay" | "manual";
+  /**
+   * Unconfirmed facts (dates, head-count, ages, access, requirements). While any are open the
+   * booking is PROVISIONAL: the owner cannot approve, send or confirm it.
+   */
+  openQuestions?: OpenQuestion[];
+}
+
+export type QuestionTopic = "dates" | "count" | "ages" | "access" | "requirement" | "preference" | "other";
+
+export interface OpenQuestion {
+  topic: QuestionTopic;
+  /** Staff-facing wording. */
+  text: string;
+  /** True when rooms must not be allocated until this is answered. */
+  blocksAllocation?: boolean;
 }

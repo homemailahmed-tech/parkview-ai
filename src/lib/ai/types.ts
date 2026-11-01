@@ -12,8 +12,9 @@ import type { AllocationOption, ISODate } from "../domain/types";
  * "dev-model" — a live response from a NON-Meta development stand-in (never shown as Meta AI).
  * "simulation" — rule-based, no model at all.
  * "test"      — a local or non-Meta test endpoint (e.g. a mock imitating Meta's API). NEVER Meta AI.
+ * "replay"    — a genuine Meta response captured earlier, replayed for a demo. Not a live call.
  */
-export type ProviderKind = "simulation" | "meta" | "dev-model" | "test";
+export type ProviderKind = "simulation" | "meta" | "dev-model" | "test" | "replay";
 export type ProviderId = "simulation" | "meta-model-api" | "groq" | "openrouter" | "open-weight";
 
 export interface ProviderInfo {
@@ -47,6 +48,8 @@ export interface ExplainInput {
   options: AllocationOption[];
   comparison: string;
   roomNames: Record<string, string>;
+  /** Deterministic accessibility facts per option (see allocation/requirements). Must be mentioned. */
+  accessibility?: string[];
 }
 
 export interface DraftInput {

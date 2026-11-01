@@ -110,7 +110,7 @@ export function SourceTag({
   modelClass,
   fallbackReason,
 }: {
-  source: "simulation" | "meta" | "dev-model" | "test" | "manual";
+  source: "simulation" | "meta" | "dev-model" | "test" | "replay" | "manual";
   label?: string;
   model?: string | null;
   modelClass?: "meta-model-api" | "meta-open-weight" | "non-meta-dev";
@@ -124,6 +124,8 @@ export function SourceTag({
           ✓ Live Meta AI{modelClass === "meta-open-weight" ? " (open-weight)" : ""} · {label ?? "Meta"}
           {m}
         </Badge>
+      ) : source === "replay" ? (
+        <Badge tone="violet" className="ring-1 ring-violet-300">▶ {label ?? "REPLAY · genuine Meta response captured earlier"}{m} · not a live call</Badge>
       ) : source === "test" ? (
         <Badge tone="red" className="ring-1 ring-red-300">LOCAL TEST — MOCK RESPONSE · not Meta AI</Badge>
       ) : source === "dev-model" ? (

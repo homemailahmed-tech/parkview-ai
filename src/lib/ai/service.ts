@@ -2,11 +2,13 @@ import { validateExtraction, unitsFromExtraction, headcountMentioned, relativeDa
 import type { GuestUnit } from "../domain/types";
 import { MetaAIProvider } from "./metaProvider";
 import { SimulationProvider } from "./simulationProvider";
+import { ReplayProvider } from "./replayProvider";
 import { resolveAIConfig, type AIEnv, type ResolvedAIConfig } from "./config";
 import { describeError } from "./errors";
 import { CallBudget, sharedBudget } from "./budget";
 import type { AIResult, ClarifyInput, ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, InterpretContext } from "./types";
 import { violatesClarificationRules } from "./clarify";
+import { openQuestionsFrom, type OpenQuestion } from "../enquiry/openQuestions";
 import { transcribeWav, VOICE_MODEL, type TranscribeOptions } from "./voice";
 import { endpointTrust } from "./endpoint";
 import { validateConciergeIntent, type ConciergeIntent } from "../maps/concierge";
@@ -32,6 +34,14 @@ export interface ProviderDeps {
 /** Chooses the provider from server-side environment variables. Defaults to simulation. */
 export function selectProvider(env: AIEnv = process.env as AIEnv, deps: ProviderDeps = {}): ProviderSelection {
   const simulation = new SimulationProvider();
+  if ((env.AI_MODE ?? "").trim().toLowerCase() === "replay") {
+    try {
+      const primary = new ReplayProvider((env.AI_REPLAY_FILE ?? "docs/evidence/stage4-live-evidence.json").trim());
+      return { primary, simulation, config: { mode: "simulation", issues: [], warnings: ["Replay mode: showing genuine Meta responses captured earlier — not live calls"] } };
+    } catch (e) {
+      return { primary: simulation, simulation, config: { mode: "simulation", issues: [], warnings: [] }, configIssue: `Replay mode not started: ${(e as Error).message}` };
+    }
+  }
   const config = resolveAIConfig(env);
   if (!config.live) {
     return { primary: simulation, simulation, config, configIssue: config.issues.length ? `Live Meta AI not started: ${config.issues.join("; ")}` : undefined };
@@ -52,13 +62,13 @@ async function withFallback<T>(sel: ProviderSelection, run: (p: HospitalityAIPro
   }
   try {
     const data = await run(p);
-    const call = p instanceof MetaAIProvider ? p.lastCall : undefined;
+    const call = p instanceof MetaAIProvider || p instanceof ReplayProvider ? p.lastCall : undefined;
     return { source: p.info.kind, provider: p.info.id, modelClass: p.info.modelClass, label: p.info.label, model: call?.servedModel ?? p.info.model, data, call };
   } catch (e) {
     return {
       ...sim(),
       data: await run(sel.simulation),
-      fallbackReason: `${p.info.label} call failed (${describeError(e)}) — simulation used instead`,
+      fallbackReason: p.info.kind === "replay" ? "No captured Meta response for this input — simulation used instead" : `${p.info.label} call failed (${describeError(e)}) — simulation used instead`,
     };
   }
 }
@@ -66,6 +76,8 @@ async function withFallback<T>(sel: ProviderSelection, run: (p: HospitalityAIPro
 export interface InterpretOutput {
   check: ExtractionCheck;
   units: GuestUnit[];
+  /** Unconfirmed facts; while any are open the booking is provisional (see enquiry/openQuestions). */
+  openQuestions: OpenQuestion[];
 }
 
 export async function interpretEnquiry(sel: ProviderSelection, text: string, ctx: InterpretContext): Promise<AIResult<InterpretOutput>> {
@@ -87,7 +99,7 @@ export async function interpretEnquiry(sel: ProviderSelection, text: string, ctx
     check.missing.push(`dates: the guest wrote "${rel}" — ask for exact dates`);
   }
   const units = check.missing.includes("number of adults") ? [] : unitsFromExtraction(check.value, check.value.guestName ?? "Guest");
-  return { ...result, data: { check, units } };
+  return { ...result, data: { check, units, openQuestions: openQuestionsFrom(check, text) } };
 }
 
 /** Money wording: currency symbols, amounts or price terms. Guest and room counts are allowed. */
@@ -96,6 +108,20 @@ export function containsPriceTalk(text: string): boolean {
 }
 
 export async function explainOptions(sel: ProviderSelection, input: ExplainInput): Promise<AIResult<string>> {
+  const result = await explainOptionsRaw(sel, input);
+  // Accessibility must never be left out: if the wording omits it, append the engine's facts (labelled).
+  if (input.accessibility?.length && !/(wheelchair|accessib|stairs|mobility)/i.test(result.data)) {
+    // (Room names like "Ground Floor Double" do not count as explaining an accessibility need.)
+    return {
+      ...result,
+      data: `${result.data}\nAccessibility: ${input.accessibility.join(" ")}`,
+      fallbackReason: [result.fallbackReason, "Accessibility facts added by the app (deterministic)"].filter(Boolean).join(" · "),
+    };
+  }
+  return result;
+}
+
+async function explainOptionsRaw(sel: ProviderSelection, input: ExplainInput): Promise<AIResult<string>> {
   const result = await withFallback(sel, (p) => p.explainOptions(input));
   if (result.source !== "simulation" && containsPriceTalk(result.data)) {
     // Prices may only come from the validated quote, never from AI wording.

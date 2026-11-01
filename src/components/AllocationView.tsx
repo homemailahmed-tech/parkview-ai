@@ -7,6 +7,7 @@ import { DEMO_PROPERTY } from "@/lib/data/property";
 import { formatDate } from "@/lib/domain/dates";
 import { formatMoney } from "@/lib/domain/money";
 import { Badge, Button, Card, Notice, SourceTag, cx } from "./ui";
+import { accessibilityFacts, requirementIssues } from "@/lib/allocation/requirements";
 
 const roomNames = Object.fromEntries(DEMO_PROPERTY.rooms.map((r) => [r.id, r.name]));
 
@@ -30,7 +31,7 @@ export function AllocationView({
       const res = await fetch("/api/ai/explain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guestName, options: result.options, comparison: result.comparison, roomNames }),
+        body: JSON.stringify({ guestName, options: result.options, comparison: result.comparison, roomNames, accessibility: accessibilityFacts(result.options, request.units, DEMO_PROPERTY.rooms) }),
       });
       if (res.ok) setExplanation(await res.json());
     } finally {
@@ -98,6 +99,9 @@ export function AllocationView({
             {o.compromises.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">{o.compromises.map((c) => <Badge key={c} tone="amber">⚠ {c}</Badge>)}</div>
             )}
+            {requirementIssues(o, request.units, DEMO_PROPERTY.rooms, { selfCatering: request.selfCatering }).map((t) => (
+              <div key={t} className="mt-2 rounded-lg bg-red-50 px-2 py-1 text-xs font-medium text-red-800" data-testid="owner-review">Owner review: {t}</div>
+            ))}
             <Button className="mt-4" variant={idx === 0 ? "primary" : "secondary"} onClick={() => onChoose(idx)}>
               Use {o.title.split(" · ")[0]} for draft quote
             </Button>

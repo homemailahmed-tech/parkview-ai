@@ -167,3 +167,32 @@ describe("spend ledger: hard caps before every request", () => {
     expect(spentUSD(JSON.parse(fs.readFileSync(stage5.file, "utf8")))).toBeLessThanOrEqual(0.045);
   });
 });
+
+describe("replay mode: genuine captured Meta responses, never shown as live", () => {
+  const evidence = path.resolve(__dirname, "../docs/evidence/stage4-live-evidence.json");
+  it("replays the captured H-3 interpretation with its original response id, labelled 'replay'", async () => {
+    const { HARD_ENQUIRIES } = await import("@/lib/data/hardEnquiries");
+    const sel = selectProvider({ AI_MODE: "replay", AI_REPLAY_FILE: evidence } as never);
+    expect(sel.primary.info.kind).toBe("replay");
+    const r = await interpretEnquiry(sel, HARD_ENQUIRIES[2].text, ctx);
+    expect(r.source).toBe("replay");
+    expect(r.call?.responseId).toBe("chatcmpl-01a196ca-5fed-7183-aa37-fb212d1e509c");
+    expect(r.data.check.value).toMatchObject({ adults: 3, children: 3, checkIn: "2026-12-14", nights: 7, selfCatering: true });
+    const html = renderToStaticMarkup(createElement(SourceTag, { source: "replay", label: sel.primary.info.label, model: r.model }));
+    expect(html).toMatch(/▶ REPLAY · genuine Meta response captured 2026-11-01/);
+    expect(html).toMatch(/not a live call/);
+    expect(html).not.toMatch(/Live Meta AI/);
+  });
+  it("input with no captured response falls back to labelled SIMULATION", async () => {
+    const r = await interpretEnquiry(selectProvider({ AI_MODE: "replay", AI_REPLAY_FILE: evidence } as never), "2 adults 12-14 December", ctx);
+    expect(r.source).toBe("simulation");
+    expect(r.fallbackReason).toMatch(/no captured Meta response/i);
+  });
+  it("refuses evidence from a dry run (only live-run evidence can be replayed)", () => {
+    const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "ev-")), "e.json");
+    fs.writeFileSync(f, JSON.stringify({ mode: "DRY RUN (local mock — not Meta)", rows: [] }));
+    const sel = selectProvider({ AI_MODE: "replay", AI_REPLAY_FILE: f } as never);
+    expect(sel.primary.info.kind).toBe("simulation");
+    expect(sel.configIssue).toMatch(/not evidence from a live run/);
+  });
+});

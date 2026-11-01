@@ -8,7 +8,8 @@ import { buildQuote } from "@/lib/quote/pricing";
 import { formatDate } from "@/lib/domain/dates";
 import type { AIResult } from "@/lib/ai/types";
 import type { InterpretOutput } from "@/lib/ai/service";
-import { guestQuestions } from "@/lib/ai/clarify";
+import { guestQuestionsFrom } from "@/lib/enquiry/openQuestions";
+import { requirementIssues } from "@/lib/allocation/requirements";
 import { useStore } from "./store";
 import { Badge, Button, Card, Notice, SourceTag, StatusPill } from "./ui";
 import { PartyEditor } from "./PartyEditor";
@@ -16,7 +17,8 @@ import { AllocationView } from "./AllocationView";
 import { QuotePanel } from "./QuotePanel";
 
 export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: () => void }) {
-  const { updateEnquiry, bookings, today, act } = useStore();
+  const { updateEnquiry, bookings, today, act, role } = useStore();
+  const allocationBlocked = (enquiry.openQuestions ?? []).some((q) => q.blocksAllocation);
   const [interp, setInterp] = useState<AIResult<InterpretOutput> | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
       const res = await fetch("/api/ai/clarify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guestName: enquiry.guestName, questions: guestQuestions(interp.data.check.missing), guestMessage }),
+        body: JSON.stringify({ guestName: enquiry.guestName, questions: guestQuestionsFrom(enquiry.openQuestions ?? interp.data.openQuestions), guestMessage }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Could not draft the question");
@@ -61,9 +63,10 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
       const r = body as AIResult<InterpretOutput>;
       setInterp(r);
       const v = r.data.check.value;
-      const next: StayRequest = { checkIn: v.checkIn ?? "", checkOut: v.checkOut ?? "", units: r.data.units };
+      const next: StayRequest = { checkIn: v.checkIn ?? "", checkOut: v.checkOut ?? "", units: r.data.units, selfCatering: v.selfCatering };
       updateEnquiry(enquiry.id, {
         request: next,
+        openQuestions: r.data.openQuestions,
         interpretedBy: r.source,
         guestName: enquiry.guestName === "New guest" && v.guestName ? v.guestName : enquiry.guestName,
       });
@@ -100,7 +103,15 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
     if (enquiry.quote) quote.version = enquiry.quote.version + 1;
     const err = act(enquiry.id, { type: enquiry.status === "enquiry" ? "create_draft" : "revise_draft", quote }, "staff");
     if (err) setError(err);
-    else setResult(null);
+    else {
+      // Needs the chosen rooms do not demonstrably meet become open questions for owner review.
+      const issues = requirementIssues(option, request.units, DEMO_PROPERTY.rooms, { selfCatering: request.selfCatering });
+      if (issues.length) {
+        const existing = enquiry.openQuestions ?? [];
+        updateEnquiry(enquiry.id, { openQuestions: [...existing, ...issues.filter((t) => !existing.some((q) => q.text === t)).map((text) => ({ topic: "requirement" as const, text }))] });
+      }
+      setResult(null);
+    }
   };
 
   const setRequest = (r: StayRequest) => {
@@ -120,6 +131,41 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
         </div>
         <StatusPill status={enquiry.status} />
       </div>
+
+      {(enquiry.openQuestions?.length ?? 0) > 0 && (
+        <div data-testid="open-questions">
+        <Card className="border-amber-300 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="font-semibold text-amber-900">⚠ Provisional · {enquiry.openQuestions!.length} open question{enquiry.openQuestions!.length === 1 ? "" : "s"}</h3>
+            <Badge tone="amber">Owner approval and confirmation locked</Badge>
+          </div>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+            {enquiry.openQuestions!.map((q) => (
+              <li key={q.text}>
+                <span className="mr-1 rounded bg-amber-50 px-1 text-[11px] uppercase tracking-wide text-amber-800">{q.topic}</span>
+                {q.text}
+                {q.blocksAllocation && <span className="ml-1 text-xs font-medium text-red-700">(rooms cannot be allocated until answered)</span>}
+              </li>
+            ))}
+          </ul>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                const now = new Date().toISOString();
+                updateEnquiry(enquiry.id, {
+                  openQuestions: [],
+                  events: [...enquiry.events, { at: now, actor: role, action: "resolve_questions", from: enquiry.status, to: enquiry.status, note: `Resolved with the guest: ${enquiry.openQuestions!.map((q) => q.text).join("; ")}` }],
+                });
+              }}
+            >
+              ✓ Answered by the guest: mark resolved
+            </Button>
+            <span className="text-xs text-slate-500">Update the guest parties and dates below first. The resolution is recorded in the audit trail.</span>
+          </div>
+        </Card>
+        </div>
+      )}
 
       {/* WhatsApp thread */}
       <Card className="overflow-hidden">
@@ -186,7 +232,8 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
               {guests} guest{guests === 1 ? "" : "s"}
               {request?.checkIn && request.checkOut ? ` · ${formatDate(request.checkIn)} → ${formatDate(request.checkOut)}` : ""}
             </span>
-            <Button onClick={findRooms} disabled={!request || guests === 0}>🛏️ Find room options</Button>
+            <Button onClick={findRooms} disabled={!request || guests === 0 || allocationBlocked}>🛏️ Find room options</Button>
+            {allocationBlocked && <span className="w-full text-xs font-medium text-red-700">Ages are not confirmed: confirm who is an adult and who is a child with the guest (and update the parties) before allocating rooms.</span>}
           </div>
         </Card>
       )}

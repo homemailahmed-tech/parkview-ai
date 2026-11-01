@@ -23,7 +23,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 
 export interface AIStatus {
   ai: {
-    kind: "simulation" | "meta" | "dev-model" | "test";
+    kind: "simulation" | "meta" | "dev-model" | "test" | "replay";
     provider: "simulation" | "meta-model-api" | "groq" | "openrouter" | "open-weight";
     label: string;
     modelClass: "meta-model-api" | "meta-open-weight" | "non-meta-dev" | null;
@@ -222,6 +222,13 @@ function OwnerLoginDialog({ enabled, onClose }: { enabled: boolean; onClose: () 
 
 function AIModeBadge({ status }: { status: AIStatus | null }) {
   if (!status) return <Badge>AI status…</Badge>;
+  if (status.ai.kind === "replay") {
+    return (
+      <Badge tone="violet" className="max-w-[9rem] truncate sm:max-w-[18rem]">
+        <span title="Replaying genuine Meta responses captured in an earlier live run — not live calls">▶ REPLAY</span>
+      </Badge>
+    );
+  }
   if (status.ai.kind === "test") {
     return (
       <Badge tone="red" className="max-w-[9rem] truncate sm:max-w-[18rem]">

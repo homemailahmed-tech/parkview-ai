@@ -53,6 +53,8 @@ export function AIStatusPanel({ status }: { status: AIStatus | null }) {
       <div className="flex flex-wrap items-center gap-2 text-sm">
         {ai.kind === "meta" ? (
           <Badge tone="blue">{ai.label}</Badge>
+        ) : ai.kind === "replay" ? (
+          <Badge tone="violet">{ai.label} · not live calls</Badge>
         ) : ai.kind === "test" ? (
           <Badge tone="red">{ai.label} · responses are not Meta AI</Badge>
         ) : ai.kind === "dev-model" ? (

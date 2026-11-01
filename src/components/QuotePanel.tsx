@@ -92,6 +92,11 @@ export function QuotePanel({ enquiry, onError }: { enquiry: Enquiry; onError: (e
       </div>
 
       <Stepper status={enquiry.status} />
+      {(enquiry.openQuestions?.length ?? 0) > 0 && (
+        <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900" data-testid="provisional-banner">
+          PROVISIONAL quote: {enquiry.openQuestions!.length} open question{enquiry.openQuestions!.length === 1 ? "" : "s"} (see top). Owner approval, sending and confirmation stay locked until resolved.
+        </div>
+      )}
 
       <div className="mt-4 overflow-x-auto">
         <table className="w-full text-xs sm:min-w-[480px] sm:text-sm [&_td:last-child]:whitespace-nowrap">
