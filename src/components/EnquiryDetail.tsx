@@ -8,6 +8,7 @@ import { buildQuote } from "@/lib/quote/pricing";
 import { formatDate } from "@/lib/domain/dates";
 import type { AIResult } from "@/lib/ai/types";
 import type { InterpretOutput } from "@/lib/ai/service";
+import { guestQuestions } from "@/lib/ai/clarify";
 import { useStore } from "./store";
 import { Badge, Button, Card, Notice, SourceTag, StatusPill } from "./ui";
 import { PartyEditor } from "./PartyEditor";
@@ -20,9 +21,34 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AllocationResult | null>(null);
+  const [clarify, setClarify] = useState<AIResult<string> | null>(null);
+  const [clarifying, setClarifying] = useState(false);
+  const [copiedQ, setCopiedQ] = useState(false);
 
   const editable = enquiry.status === "enquiry" || enquiry.status === "draft_quote";
   const request = enquiry.request;
+
+  const draftQuestion = async () => {
+    if (!interp) return;
+    setClarifying(true);
+    setError(null);
+    try {
+      const guestMessage = enquiry.messages.filter((m) => m.from === "guest").map((m) => m.text).join("\n");
+      const res = await fetch("/api/ai/clarify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guestName: enquiry.guestName, questions: guestQuestions(interp.data.check.missing), guestMessage }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Could not draft the question");
+      setClarify(body as AIResult<string>);
+      setCopiedQ(false);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setClarifying(false);
+    }
+  };
 
   const interpret = async () => {
     setBusy(true);
@@ -42,6 +68,7 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
         guestName: enquiry.guestName === "New guest" && v.guestName ? v.guestName : enquiry.guestName,
       });
       setResult(null);
+      setClarify(null);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -128,6 +155,23 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
               <SourceTag source={interp.source} label={interp.label} model={interp.model} modelClass={interp.modelClass} fallbackReason={interp.fallbackReason} />
               {interp.data.check.missing.length > 0 && (
                 <Notice>Missing: {interp.data.check.missing.join(", ")} — ask the guest or fill in below.</Notice>
+              )}
+              {interp.data.check.missing.length > 0 && (
+                <div className="rounded-xl bg-[#efeae2] p-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button variant="secondary" onClick={draftQuestion} disabled={clarifying}>{clarifying ? "Writing…" : "✨ Draft question to guest"}</Button>
+                    {clarify && (
+                      <Button variant="secondary" onClick={() => { void navigator.clipboard?.writeText(clarify.data).catch(() => {}); setCopiedQ(true); }}>{copiedQ ? "✔ Copied" : "📋 Copy"}</Button>
+                    )}
+                  </div>
+                  {clarify && (
+                    <div className="mt-2 space-y-2">
+                      <SourceTag source={clarify.source} label={clarify.label} model={clarify.model} modelClass={clarify.modelClass} fallbackReason={clarify.fallbackReason} />
+                      <div className="whitespace-pre-wrap rounded-2xl rounded-tr-sm bg-[#d9fdd3] px-3 py-2 text-sm shadow-sm" data-testid="clarify-text">{clarify.data}</div>
+                      <p className="text-[11px] text-slate-500">The AI may only ask questions. Prices, availability and confirmations never come from it. Review before sending.</p>
+                    </div>
+                  )}
+                </div>
               )}
               {interp.data.check.issues.map((i) => <Notice key={i} tone="blue">{i}</Notice>)}
               {(interp.data.check.value.notes ?? []).length > 0 && (

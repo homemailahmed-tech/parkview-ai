@@ -35,6 +35,7 @@ export class RateLimiter {
 export function ruleFor(pathname: string): { group: string; rule: RateRule } | null {
   if (pathname.startsWith("/api/access") || pathname.startsWith("/api/owner/login")) return { group: "login", rule: { limit: 10, windowMs: 15 * 60_000 } };
   if (pathname.startsWith("/api/ai/test") || pathname.startsWith("/api/ai/catalog")) return { group: "owner-tools", rule: { limit: 10, windowMs: 60_000 } };
+  if (pathname.startsWith("/api/ai/transcribe")) return { group: "voice", rule: { limit: 10, windowMs: 60_000 } };
   if (pathname.startsWith("/api/")) return { group: "api", rule: { limit: 40, windowMs: 60_000 } };
   return null;
 }

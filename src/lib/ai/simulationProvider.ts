@@ -1,6 +1,7 @@
 import { simulateExtraction } from "../enquiry/simulatedParser";
 import { simulateConciergeIntent } from "../maps/concierge";
-import type { ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, InterpretContext } from "./types";
+import type { ClarifyInput, ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, InterpretContext } from "./types";
+import { clarificationTemplate } from "./clarify";
 
 /**
  * SIMULATION MODE — deterministic, rule-based responses so the demo runs
@@ -29,5 +30,9 @@ export class SimulationProvider implements HospitalityAIProvider {
 
   async interpretConciergeQuestion(input: ConciergeInput): Promise<unknown> {
     return simulateConciergeIntent(input.question, input.categories);
+  }
+
+  async draftClarification(input: ClarifyInput): Promise<string> {
+    return clarificationTemplate(input);
   }
 }

@@ -58,6 +58,15 @@ export interface DraftInput {
   propertyName: string;
 }
 
+export interface ClarifyInput {
+  guestName: string;
+  propertyName: string;
+  /** What staff still need to know (from deterministic validation and the interpreter). */
+  questions: string[];
+  /** The guest's own message, so the reply can match their language and tone. */
+  guestMessage: string;
+}
+
 export interface ConciergeInput {
   question: string;
   categories: string[];
@@ -73,6 +82,8 @@ export interface HospitalityAIProvider {
   draftQuoteIntro(input: DraftInput): Promise<string>;
   /** Returns raw JSON matching ConciergeIntent — validated by the caller. */
   interpretConciergeQuestion(input: ConciergeInput): Promise<unknown>;
+  /** A WhatsApp reply asking the guest ONLY the given questions. No prices, availability or promises. */
+  draftClarification(input: ClarifyInput): Promise<string>;
 }
 
 export interface AIResult<T> {

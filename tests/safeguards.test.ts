@@ -105,7 +105,7 @@ describe("AI cannot invent availability, capacity, prices, bookings or payments"
   it("the AI layer has no code path to the booking workflow (no transitions, approvals or payments)", () => {
     const files = [
       ...fs.readdirSync(path.resolve(__dirname, "../src/lib/ai")).map((f) => path.join("../src/lib/ai", f)),
-      ...["interpret", "explain", "draft", "test", "status", "catalog"].map((r) => `../src/app/api/ai/${r}/route.ts`),
+      ...["interpret", "explain", "draft", "test", "status", "catalog", "clarify", "transcribe"].map((r) => `../src/app/api/ai/${r}/route.ts`),
     ];
     for (const f of files) {
       const src = fs.readFileSync(path.resolve(__dirname, f), "utf8");

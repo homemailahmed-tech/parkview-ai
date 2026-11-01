@@ -26,6 +26,8 @@ export interface ExtractedEnquiry {
   separateBeds?: boolean;
   selfCatering?: boolean;
   notes?: string[];
+  /** Questions the interpreter says must be asked because something is unclear or contradictory. */
+  clarifications?: string[];
 }
 
 export interface ExtractionCheck {
@@ -93,6 +95,14 @@ export function validateExtraction(raw: unknown): ExtractionCheck {
     }
   }
   if (Array.isArray(src.notes)) v.notes = src.notes.filter((n): n is string => typeof n === "string").map((n) => n.slice(0, 200)).slice(0, 10);
+  if (Array.isArray(src.clarifications)) {
+    // Questions only: anything mentioning money is dropped (prices come from the quote, never the AI).
+    const qs = src.clarifications
+      .filter((n): n is string => typeof n === "string" && n.trim().length > 0)
+      .map((n) => n.trim().slice(0, 200))
+      .filter((n) => !/(\bR\s?\d|\bZAR\b|\$|€|£|\bprice|\bcost|\brate\b)/i.test(n));
+    if (qs.length) v.clarifications = qs.slice(0, 5);
+  }
 
   // Reconcile totals so the parts never exceed the whole.
   const famAdults = (v.families ?? []).reduce((s, f) => s + f.adults, 0);
@@ -112,6 +122,7 @@ export function validateExtraction(raw: unknown): ExtractionCheck {
   if (v.children !== undefined && famChildren > v.children) v.children = famChildren;
 
   const missing: string[] = [...missing0];
+  for (const q of v.clarifications ?? []) missing.push(`to clarify: ${q}`);
   if (!v.checkIn) missing.push("check-in date");
   if (!v.checkOut) missing.push("check-out date or number of nights");
   if (!v.adults) missing.push("number of adults");
@@ -217,4 +228,12 @@ export function headcountMentioned(text: string): number | undefined {
     }
   }
   return seen.size ? sum : undefined;
+}
+
+const RELATIVE_DATE = /\b(today|tonight|tomorrow|next (?:week|weekend|month|mon|tues|wednes|thurs|fri|satur|sun)\w*|(?:mon|tues|wednes|thurs|fri|satur|sun)day after next|after next|this (?:coming )?(?:week|weekend|mon|tues|wednes|thurs|fri|satur|sun)\w*|in (?:a|one|two|three|\d+) (?:days?|weeks?)|volgende (?:week|naweek|maand|\w+dag)|oormôre)\b/i;
+
+/** Deterministic: the guest gave a relative date ("the Friday after next"), so any resolved date must be confirmed. */
+export function relativeDatePhrase(text: string): string | undefined {
+  const m = RELATIVE_DATE.exec(text);
+  return m ? m[0] : undefined;
 }

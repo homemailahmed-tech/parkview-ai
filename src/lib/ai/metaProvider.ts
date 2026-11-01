@@ -1,7 +1,7 @@
 import { chatCompletion, type ChatClientConfig } from "./chatClient";
 import type { LiveAIConfig } from "./config";
 import { AIProviderError } from "./errors";
-import type { ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, InterpretContext, LiveCallMeta, ProviderInfo } from "./types";
+import type { ClarifyInput, ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, InterpretContext, LiveCallMeta, ProviderInfo } from "./types";
 
 /**
  * Live model provider behind the switchboard, for:
@@ -52,14 +52,18 @@ export class MetaAIProvider implements HospitalityAIProvider {
 
   async interpretEnquiry(text: string, ctx: InterpretContext): Promise<unknown> {
     const system = [
-      `You extract booking details from guest messages for ${ctx.propertyName}. Today is ${ctx.today}.`,
+      `You extract booking details from guest messages for ${ctx.propertyName}. Today is ${ctx.today} (${weekday(ctx.today)}).`,
+      "Messages are informal WhatsApp text and may mix languages (for example English, isiZulu, Afrikaans). Understand them in any language.",
+      "If the guest corrects themselves, the LATER statement wins. Resolve relative dates (e.g. 'the Friday after next') from today's date.",
+      "Count everyone: players, learners, members, coaches, teachers, drivers, leaders and family members (e.g. a grandmother) all count.",
       "Reply with ONE JSON object only (no prose), using these optional keys:",
       "guestName (string), checkIn (YYYY-MM-DD), checkOut (YYYY-MM-DD), nights (int),",
       "adults (int, the TOTAL number of adults in the whole group, including players, members, drivers, coaches and leaders), children (int),",
       "couples (int, couples NOT inside a family who share a bed), families (array of {adults:int, children:int}),",
       "drivers (int, need own room), groupLeaders (int, need own room), wheelchairUsers (int), groundFloorGuests (int),",
-      "separateBeds (bool), selfCatering (bool), notes (array of short strings).",
-      "Omit anything the guest did not state. Never invent dates or numbers. Do not quote prices.",
+      "separateBeds (bool), selfCatering (bool), notes (array of short strings, in English),",
+      "clarifications (array of short English questions staff must ask because something is missing, uncertain or contradictory, e.g. 'Two nights or three?').",
+      "Omit anything the guest did not state. Never invent dates or numbers: if unsure, leave the field out and add a clarification. Do not quote prices or promise availability.",
     ].join("\n");
     return parseJsonObject(await this.chat(system, text, true));
   }
@@ -83,6 +87,18 @@ export class MetaAIProvider implements HospitalityAIProvider {
     return (await this.chat(system, JSON.stringify(input), false)).trim();
   }
 
+  async draftClarification(input: ClarifyInput): Promise<string> {
+    const system = [
+      `You write a short WhatsApp reply from ${input.propertyName} to a guest whose booking enquiry is incomplete.`,
+      "Reply in the same language the guest used (English if unsure), warm and brief (at most 6 short lines).",
+      "Ask ONLY the questions listed in the input, rephrased politely for the guest. Do not add other questions.",
+      "Do NOT mention prices, totals, discounts or deposits. Do NOT say rooms are available, reserved or confirmed. Do NOT promise anything.",
+      "Plain text only, no markdown headings.",
+    ].join("\n");
+    const user = JSON.stringify({ guestName: input.guestName, questions: input.questions, guestMessage: input.guestMessage.slice(0, 1500) });
+    return (await this.chat(system, user, false)).trim();
+  }
+
   async interpretConciergeQuestion(input: ConciergeInput): Promise<unknown> {
     const system = [
       "You map a hotel guest's local-area question to search intent. Reply with ONE JSON object only:",
@@ -91,6 +107,10 @@ export class MetaAIProvider implements HospitalityAIProvider {
     ].join("\n");
     return parseJsonObject(await this.chat(system, input.question, true));
   }
+}
+
+function weekday(iso: string): string {
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { weekday: "long", timeZone: "UTC" });
 }
 
 /** Extracts the first JSON object from model output (tolerates code fences and surrounding prose). */

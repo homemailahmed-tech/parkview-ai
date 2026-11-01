@@ -10,6 +10,48 @@ Built for the Meta Global AI Developer Hackathon 2026.
 > **Demo data only.** *Parkside Demo Guest House*, its guests, phone numbers, bookings, rates and address are fictional.
 > No real guest data, payments or WhatsApp messages are used.
 
+## Judge quick start (60 seconds)
+
+**Problem.** Independent guest houses, lodges and B&Bs get group enquiries as informal WhatsApp messages and voice notes: *"Sawubona! 12 netball girls, two coaches and the bus driver, the Friday after next, one coach uses crutches…"*. Turning that into who sleeps where, a correct price and a reply takes the owner hours, and mistakes cost money.
+
+**Why Meta AI is essential.** Rules cannot read messages like that. In our own tests the rule-based fallback missed the relative date, garbled a correction ("not 14 anymore, now 16 … gogo is coming too") and understood nothing of an Afrikaans enquiry. Meta's models do the language work:
+- **Muse Spark 1.3** reads the message and returns structured booking facts, plus the questions it cannot answer;
+- **Muse Spark** drafts the clarifying reply in the guest's own style;
+- **Muse Voice Transcribe** turns a spoken enquiry into text.
+
+**AI reads → deterministic code decides → the owner approves.** Availability, capacity, beds, prices and booking status come only from tested code. The AI can never set them, and every AI output is labelled **✓ Live Meta AI** or **SIMULATION**.
+
+| | Status |
+|---|---|
+| Enquiry interpretation (Muse Spark 1.3) | **Live-verified** 1 Nov 2026 ([evidence](docs/LIVE_META_VERIFICATION.md)) |
+| Hard enquiries: mixed language, relative dates, corrections; AI clarification questions; clarifying reply to guest | Built and tested with mocked model replies; **live verification pending** |
+| Voice dictation (browser mic → 16 kHz WAV → Muse Voice Transcribe) | Built; browser end-to-end tested against a local mock of Meta's endpoint; **live verification pending** |
+| Option explanations, quote greeting, concierge interpretation (Muse Spark) | Built; mocked tests only so far |
+| Room allocation, availability, pricing, owner approval | Working, deterministic, unit-tested |
+| WhatsApp sending, payments | **Simulated** (copy-ready text; simulated deposits) |
+| Guest booking website, channel managers (Booking.com, Airbnb), real payments, housekeeping | **Not built**: roadmap |
+
+**Run it:**
+```bash
+npm ci && npm test        # 176 tests, no network or keys needed
+npm run dev               # http://localhost:3000, simulation mode by default
+# Live Meta mode (server-side key, never sent to the browser):
+AI_MODE=meta-model-api META_MODEL_API_KEY=… AI_JSON_MODE=prompt npm run dev
+```
+
+Try **Enquiries → + New enquiry → Hard 1 → ➤ → Read with AI → Draft question to guest**. Then use **Lindiwe → Find room options → Use Option A → Submit for owner approval**.
+
+**Safety architecture:**
+- Model output is schema-validated.
+- A guest-count cross-check runs against the message.
+- Relative dates are always confirmed.
+- Price, availability and booking language is filtered out of AI text.
+- Owner-only approval and payment.
+- Live-call budget; keys stay server-side.
+- 176 automated tests, including hostile model output.
+
+**Built with AI assistance:** the code was written with an AI coding assistant (Claude Code) under the developer's direction (see [`docs/HACKATHON_WORK.md`](docs/HACKATHON_WORK.md)). Meta models are the only AI used *inside* the product. Model research: [`docs/META_MODELS.md`](docs/META_MODELS.md).
+
 ## What it does
 
 | Area | What works today |
@@ -28,7 +70,7 @@ Built for the Meta Global AI Developer Hackathon 2026.
 npm install
 cp .env.example .env.local   # optional — defaults to simulation mode
 npm run dev                  # http://localhost:3000
-npm test                     # 155 automated tests
+npm test                     # 176 automated tests
 npm run typecheck
 npm run build
 ```
@@ -161,7 +203,7 @@ Halaal eateries and events are *fictional placeholders*. The guest house locatio
 
 ## Testing
 
-`npm test` runs 155 tests across: booking safeguards against hostile model output (availability, capacity, prices, approval, payment, head-count, private data), room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
+`npm test` runs 176 tests across: voice (WAV encoding, Muse Voice Transcribe request contract, route limits, permissions), hard enquiries (relative dates, clarifications, clarification replies), booking safeguards against hostile model output (availability, capacity, prices, approval, payment, head-count, private data), room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
 conflicting bookings, quotation totals & tamper detection, owner-approval and payment guards, invalid/missing enquiry information,
 Meta AI providers and switchboard (Meta Model API, Groq, OpenRouter, open-weight: config, model classes, mocked success/failure modes,
 free-only guard, catalogue check, budget, connection test), API routes (no key leakage), secret hygiene,

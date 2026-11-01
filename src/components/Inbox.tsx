@@ -6,6 +6,9 @@ import { useStore } from "./store";
 import { Button, Card, StatusPill, cx, inputClass } from "./ui";
 import { EnquiryDetail } from "./EnquiryDetail";
 
+import { HARD_ENQUIRIES } from "@/lib/data/hardEnquiries";
+import { VoiceDictation } from "./VoiceDictation";
+
 const SAMPLES = [
   "Hi, this is Ayesha. 2 couples and 3 kids (family) need rooms 18-21 December. One of us can't manage stairs. Is there Halaal food nearby?",
   "Hello, my husband and I plus our 2 children, arriving 5 January for 2 nights. We'd like to stay together.",
@@ -100,7 +103,13 @@ function Composer({ onDone }: { onDone: (id: string | null) => void }) {
               Sample {i + 1}
             </button>
           ))}
+          {HARD_ENQUIRIES.map((h, i) => (
+            <button key={h.id} title={h.label} onClick={() => { setText(h.text); setName(h.guestName); }} className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] text-amber-900 shadow-sm hover:bg-amber-200">
+              Hard {i + 1}
+            </button>
+          ))}
         </div>
+        <VoiceDictation onTranscript={(t) => setText((prev) => (prev.trim() ? `${prev.trim()}\n${t}` : t))} />
         <div className="flex items-end gap-2">
           <textarea
             className={cx(inputClass, "min-h-[90px] rounded-2xl")}

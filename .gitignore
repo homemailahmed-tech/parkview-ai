@@ -154,3 +154,4 @@ docs/competition/video-tools/out/
 docs/competition/video-tools/tmp-*/
 docs/competition/video-tools/*.log
 docs/competition/video-tools/*ledger*.json
+docs/competition/video-tools/audio/
