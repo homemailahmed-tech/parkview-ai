@@ -34,7 +34,7 @@ export async function transcribeWav(cfg: Pick<LiveAIConfig, "baseUrl" | "apiKey"
   const entry = cfg.spend ? reserve(cfg.spend, "voice", worst) : undefined;
   try {
     const t = await transcribeOnce(cfg, wav, opts, fetchImpl);
-    if (cfg.spend && entry) settle(cfg.spend, entry.n, { status: 200, costUSD: (t.audioDurationMs ?? ("error" in info ? 60_000 : info.durationMs)) * PRICES.audioPerMs, responseId: t.sessionId, model: VOICE_MODEL, audioDurationMs: t.audioDurationMs });
+    if (cfg.spend && entry) settle(cfg.spend, entry.n, { status: 200, costUSD: (t.audioDurationMs ?? ("error" in info ? 60_000 : info.durationMs)) * PRICES.audioPerMs, responseId: t.sessionId, model: VOICE_MODEL, audioDurationMs: t.audioDurationMs, output: t.transcript.slice(0, 1500) });
     return t;
   } catch (e) {
     if (cfg.spend && entry) {

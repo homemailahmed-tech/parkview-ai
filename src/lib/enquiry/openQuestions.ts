@@ -1,5 +1,5 @@
 import type { ExtractedEnquiry, ExtractionCheck } from "./extraction";
-import type { OpenQuestion, QuestionTopic } from "../domain/types";
+import type { Actor, Enquiry, OpenQuestion, QuestionTopic, WorkflowEvent } from "../domain/types";
 
 export type { OpenQuestion, QuestionTopic };
 
@@ -104,4 +104,48 @@ function guestWording(topic: QuestionTopic, texts: string[]): string[] {
     default:
       return texts.map((t) => (/\?$/.test(t) ? t : `${t.charAt(0).toUpperCase()}${t.slice(1)}?`)).slice(0, 1);
   }
+}
+
+export const CONFIRMATION_SOURCES = ["whatsapp", "phone", "email", "in-person"] as const;
+export type ConfirmationSource = (typeof CONFIRMATION_SOURCES)[number];
+
+export interface QuestionResolution {
+  /** The open question's text, exactly as listed. */
+  question: string;
+  /** What the guest actually confirmed, e.g. "Gogo is the 17th guest". */
+  answer: string;
+  source: ConfirmationSource;
+  /** Staff member who received the answer. */
+  confirmedBy: string;
+}
+
+export class ResolutionError extends Error {}
+
+/**
+ * Records guest-confirmed answers. A question is only closed with the guest's actual answer,
+ * where it came from and who received it — never by a bare checkbox. Each answer is written to
+ * the audit trail. Unanswered questions stay open (and the booking stays provisional).
+ */
+export function resolveOpenQuestions(enquiry: Enquiry, resolutions: QuestionResolution[], actor: Actor, now: string): Enquiry {
+  const open = enquiry.openQuestions ?? [];
+  if (!resolutions.length) throw new ResolutionError("Enter the guest's answer to at least one question");
+  const events: WorkflowEvent[] = [];
+  const closed = new Set<string>();
+  for (const r of resolutions) {
+    const q = open.find((o) => o.text === r.question);
+    if (!q) throw new ResolutionError(`Not an open question: ${r.question}`);
+    const answer = (r.answer ?? "").trim();
+    const by = (r.confirmedBy ?? "").trim();
+    if (answer.length < 2) throw new ResolutionError(`Enter the guest's actual answer for: ${q.text}`);
+    if (!CONFIRMATION_SOURCES.includes(r.source)) throw new ResolutionError("Choose where the answer came from (WhatsApp, phone, email or in person)");
+    if (by.length < 2) throw new ResolutionError("Enter who received the guest's answer");
+    closed.add(q.text);
+    events.push({ at: now, actor, action: "resolve_question", from: enquiry.status, to: enquiry.status, note: `[${q.topic}] ${q.text} → guest confirmed: "${answer.slice(0, 200)}" (via ${r.source}, recorded by ${by.slice(0, 60)})` });
+  }
+  return {
+    ...enquiry,
+    openQuestions: open.filter((o) => !closed.has(o.text)),
+    resolvedQuestions: [...(enquiry.resolvedQuestions ?? []), ...resolutions.map((r) => ({ ...r, answer: r.answer.trim().slice(0, 200), confirmedBy: r.confirmedBy.trim().slice(0, 60), at: now, topic: open.find((o) => o.text === r.question)!.topic }))],
+    events: [...enquiry.events, ...events],
+  };
 }

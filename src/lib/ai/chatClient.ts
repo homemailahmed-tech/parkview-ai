@@ -99,7 +99,7 @@ async function post(cfg: ChatClientConfig, body: Record<string, unknown>): Promi
     if (cfg.spend && entry) {
       const u = r.usage;
       const cost = u?.promptTokens !== undefined || u?.completionTokens !== undefined ? (u.promptTokens ?? 0) * PRICES.chatIn + (u.completionTokens ?? 0) * PRICES.chatOut : entry.worstUSD;
-      settle(cfg.spend, entry.n, { status: 200, costUSD: cost, responseId: r.id, model: r.model, usage: u });
+      settle(cfg.spend, entry.n, { status: 200, costUSD: cost, responseId: r.id, model: r.model, usage: u, output: r.content.slice(0, 1500) });
     }
     return r;
   } catch (e) {

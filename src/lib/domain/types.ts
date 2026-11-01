@@ -232,6 +232,8 @@ export interface Enquiry {
    * booking is PROVISIONAL: the owner cannot approve, send or confirm it.
    */
   openQuestions?: OpenQuestion[];
+  /** Guest-confirmed answers to former open questions (answer, source, who recorded it). */
+  resolvedQuestions?: { question: string; answer: string; source: string; confirmedBy: string; at: string; topic: QuestionTopic }[];
 }
 
 export type QuestionTopic = "dates" | "count" | "ages" | "access" | "requirement" | "preference" | "other";

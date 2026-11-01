@@ -8,10 +8,10 @@ import { buildQuote } from "@/lib/quote/pricing";
 import { formatDate } from "@/lib/domain/dates";
 import type { AIResult } from "@/lib/ai/types";
 import type { InterpretOutput } from "@/lib/ai/service";
-import { guestQuestionsFrom } from "@/lib/enquiry/openQuestions";
+import { guestQuestionsFrom, resolveOpenQuestions, type ConfirmationSource } from "@/lib/enquiry/openQuestions";
 import { requirementIssues } from "@/lib/allocation/requirements";
 import { useStore } from "./store";
-import { Badge, Button, Card, Notice, SourceTag, StatusPill } from "./ui";
+import { Badge, Button, Card, Notice, SourceTag, StatusPill, inputClass } from "./ui";
 import { PartyEditor } from "./PartyEditor";
 import { AllocationView } from "./AllocationView";
 import { QuotePanel } from "./QuotePanel";
@@ -26,6 +26,9 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
   const [clarify, setClarify] = useState<AIResult<string> | null>(null);
   const [clarifying, setClarifying] = useState(false);
   const [copiedQ, setCopiedQ] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answerSource, setAnswerSource] = useState<ConfirmationSource>("whatsapp");
+  const [receivedBy, setReceivedBy] = useState("");
 
   const editable = enquiry.status === "enquiry" || enquiry.status === "draft_quote";
   const request = enquiry.request;
@@ -148,20 +151,40 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
               </li>
             ))}
           </ul>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Button
-              variant="secondary"
-              onClick={() => {
-                const now = new Date().toISOString();
-                updateEnquiry(enquiry.id, {
-                  openQuestions: [],
-                  events: [...enquiry.events, { at: now, actor: role, action: "resolve_questions", from: enquiry.status, to: enquiry.status, note: `Resolved with the guest: ${enquiry.openQuestions!.map((q) => q.text).join("; ")}` }],
-                });
-              }}
-            >
-              ✓ Answered by the guest: mark resolved
-            </Button>
-            <span className="text-xs text-slate-500">Update the guest parties and dates below first. The resolution is recorded in the audit trail.</span>
+          <div className="mt-3 space-y-2 border-t border-amber-100 pt-3">
+            <p className="text-xs text-slate-600">Record what the guest actually confirmed. A question only closes with the guest's answer, where it came from and who received it (saved in the audit trail). Update the guest parties and dates below to match.</p>
+            {enquiry.openQuestions!.map((q) => (
+              <label key={q.text} className="block text-xs text-slate-600">
+                Guest's answer: <span className="text-slate-800">{q.text}</span>
+                <input className={inputClass} aria-label={`Guest's answer: ${q.text}`} value={answers[q.text] ?? ""} onChange={(e) => setAnswers({ ...answers, [q.text]: e.target.value })} placeholder="e.g. Gogo is the 17th guest" />
+              </label>
+            ))}
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="text-xs text-slate-600">Answer received via
+                <select aria-label="Answer received via" className={inputClass} value={answerSource} onChange={(e) => setAnswerSource(e.target.value as ConfirmationSource)}>
+                  <option value="whatsapp">WhatsApp</option><option value="phone">Phone call</option><option value="email">Email</option><option value="in-person">In person</option>
+                </select>
+              </label>
+              <label className="text-xs text-slate-600">Received by (staff name)
+                <input aria-label="Received by" className={inputClass} value={receivedBy} onChange={(e) => setReceivedBy(e.target.value)} />
+              </label>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  const resolutions = enquiry.openQuestions!.filter((q) => (answers[q.text] ?? "").trim()).map((q) => ({ question: q.text, answer: answers[q.text], source: answerSource, confirmedBy: receivedBy }));
+                  try {
+                    const next = resolveOpenQuestions(enquiry, resolutions, role, new Date().toISOString());
+                    updateEnquiry(enquiry.id, { openQuestions: next.openQuestions, resolvedQuestions: next.resolvedQuestions, events: next.events });
+                    setAnswers({});
+                    setError(null);
+                  } catch (e) {
+                    setError((e as Error).message);
+                  }
+                }}
+              >
+                ✓ Record the guest's answers
+              </Button>
+            </div>
           </div>
         </Card>
         </div>

@@ -160,3 +160,4 @@ docs/competition/video-tools/e2e/*.json
 docs/competition/video-tools/e2e/*.wav
 docs/competition/video-tools/live-evidence.json
 .next-*/
+docs/competition/video-tools/live-stage5-server.log

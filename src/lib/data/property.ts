@@ -4,6 +4,8 @@ import { addDays } from "../domain/dates";
 /**
  * Parkside Demo Guest House — a FICTIONAL property used for the hackathon demo.
  * All rates are fictional sample values in South African Rand (ZAR).
+ * Floors, wheelchair access, private entrances and kitchens are also invented for the demo:
+ * they do not describe the layout or accessibility of any real guest house.
  */
 export const DEMO_ROOMS: Room[] = [
   {

@@ -29,6 +29,8 @@ export interface LedgerEntry {
   model?: string;
   usage?: unknown;
   audioDurationMs?: number;
+  /** Model output or transcript (evidence; fictional demo data only; max 1500 chars). */
+  output?: string;
   note?: string;
 }
 
