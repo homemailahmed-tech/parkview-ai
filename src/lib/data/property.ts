@@ -24,7 +24,7 @@ export const DEMO_ROOMS: Room[] = [
   },
   {
     id: "r2",
-    name: "Room 2 · Park View Triple",
+    name: "Room 2 · Garden View Triple",
     shortName: "Room 2",
     capacity: 3,
     beds: [{ type: "single", count: 3 }],

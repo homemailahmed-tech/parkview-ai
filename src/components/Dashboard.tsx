@@ -138,7 +138,7 @@ function Brand({ compact }: { compact?: boolean }) {
     <div className="flex items-center gap-2.5">
       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-lg text-white">🌿</div>
       <div className="leading-tight">
-        <div className="text-sm font-semibold text-slate-900">Hospitality AI</div>
+        <div className="text-sm font-semibold text-slate-900">ParkView AI</div>
         {!compact && <div className="text-xs text-slate-500">{DEMO_PROPERTY.name}</div>}
         {compact && <div className="text-[11px] text-slate-500">Parkside Demo</div>}
       </div>

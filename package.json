@@ -2,7 +2,7 @@
   "name": "meta-hospitality-ai",
   "version": "0.1.0",
   "private": true,
-  "description": "Hospitality AI \u2014 enquiry, room-allocation and quotation assistant for independent guest houses (Meta Global AI Developer Hackathon 2026).",
+  "description": "ParkView AI \u2014 enquiry, room-allocation and quotation assistant for independent guest houses (Meta Global AI Developer Hackathon 2026).",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

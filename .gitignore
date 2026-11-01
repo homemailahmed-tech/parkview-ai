@@ -147,3 +147,10 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Private video tooling outputs (never commit recordings, ledgers or logs)
+docs/competition/video-tools/clips/
+docs/competition/video-tools/out/
+docs/competition/video-tools/tmp-*/
+docs/competition/video-tools/*.log
+docs/competition/video-tools/*ledger*.json

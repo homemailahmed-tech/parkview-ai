@@ -94,7 +94,7 @@ export function QuotePanel({ enquiry, onError }: { enquiry: Enquiry; onError: (e
       <Stepper status={enquiry.status} />
 
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[480px] text-sm">
+        <table className="w-full text-xs sm:min-w-[480px] sm:text-sm [&_td:last-child]:whitespace-nowrap">
           <thead className="text-left text-xs text-slate-500">
             <tr>
               <th className="py-1 font-medium">Room</th>

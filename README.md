@@ -1,8 +1,12 @@
-# Hospitality AI
+# ParkView AI — Intelligent Hospitality Operations
+
+*(Project folder name: meta-hospitality-ai. Formerly "Hospitality AI".)*
 
 **AI-assisted enquiry, room-allocation and quotation assistant for independent guest houses — with an AI Smart Maps travel concierge.**
 Built for the Meta Global AI Developer Hackathon 2026.
 
+> **Built during the Meta Global AI Developer Hackathon 2026** (27 Oct – 4 Nov). See [`docs/HACKATHON_WORK.md`](docs/HACKATHON_WORK.md) for what was built when, and what is live Meta AI versus simulated.
+>
 > **Demo data only.** *Parkside Demo Guest House*, its guests, phone numbers, bookings, rates and address are fictional.
 > No real guest data, payments or WhatsApp messages are used.
 
@@ -24,7 +28,7 @@ Built for the Meta Global AI Developer Hackathon 2026.
 npm install
 cp .env.example .env.local   # optional — defaults to simulation mode
 npm run dev                  # http://localhost:3000
-npm test                     # 154 automated tests
+npm test                     # 155 automated tests
 npm run typecheck
 npm run build
 ```
@@ -41,7 +45,7 @@ Android phone, with a demo access code and owner login. The site is not deployed
 | Room | Sleeps | Beds | Floor / features | Rate (fictional, ZAR/night) |
 | --- | --- | --- | --- | --- |
 | Room 1 · Accessible Triple | 3 | queen + single | ground, wheelchair accessible | 1 guest R850 · 2 R1 150 · 3 R1 500 |
-| Room 2 · Park View Triple | 3 | 3 singles | first | R800 · R1 100 · R1 450 |
+| Room 2 · Garden View Triple | 3 | 3 singles | first | R800 · R1 100 · R1 450 |
 | Room 3 · Corner Triple | 3 | queen + single | first | R800 · R1 100 · R1 450 |
 | Room 4 · Family Room | 4 | 2 queens | first | R1 100 · R1 450 · R1 750 · R2 050 |
 | Room 5 · Courtyard Triple | 3 | 3 singles | ground | R800 · R1 100 · R1 450 |
@@ -157,7 +161,7 @@ Halaal eateries and events are *fictional placeholders*. The guest house locatio
 
 ## Testing
 
-`npm test` runs 154 tests across: booking safeguards against hostile model output (availability, capacity, prices, approval, payment, head-count, private data), room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
+`npm test` runs 155 tests across: booking safeguards against hostile model output (availability, capacity, prices, approval, payment, head-count, private data), room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
 conflicting bookings, quotation totals & tamper detection, owner-approval and payment guards, invalid/missing enquiry information,
 Meta AI providers and switchboard (Meta Model API, Groq, OpenRouter, open-weight: config, model classes, mocked success/failure modes,
 free-only guard, catalogue check, budget, connection test), API routes (no key leakage), secret hygiene,

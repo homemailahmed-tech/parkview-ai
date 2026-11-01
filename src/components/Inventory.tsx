@@ -83,7 +83,7 @@ export function Inventory() {
         <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500">
           <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-emerald-50 ring-1 ring-emerald-200" /> Available</span>
           <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-brand-300" /> Existing booking</span>
-          <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-brand-500" /> Confirmed via Hospitality AI</span>
+          <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-brand-500" /> Confirmed via ParkView AI</span>
           <span className="flex items-center gap-1"><i className="h-3 w-3 rounded bg-slate-300" /> Blocked</span>
         </div>
       </Card>

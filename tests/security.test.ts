@@ -200,7 +200,7 @@ describe("deployment hygiene", () => {
   it("contains no reference to the real guest house or its systems", () => {
     for (const f of files(path.join(root, "src"))) {
       // Standalone region code only — "ukzn" (University of KwaZulu-Natal) is a legitimate concierge keyword.
-      expect(readFileSync(f, "utf8"), f).not.toMatch(new RegExp(Buffer.from("XGJLWk5cYnxQYXJrIFZpZXcgR3Vlc3QgSG91c2U=", "base64").toString("utf8"), "i") /* real property name, encoded */);
+      expect(readFileSync(f, "utf8"), f).not.toMatch(new RegExp(Buffer.from("XGJLWk5cYnxQYXJrIFZpZXcgKEd1ZXN0IEhvdXNlfFRyaXBsZSk=", "base64").toString("utf8"), "i") /* real property name, encoded */);
     }
   });
 });

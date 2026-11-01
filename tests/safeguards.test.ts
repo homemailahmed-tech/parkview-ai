@@ -145,13 +145,21 @@ describe("AI cannot silently undercount a group", () => {
     const r = await interpretEnquiry(mocked(LIVE_REPLY).sel, TEXT, ctx);
     expect(r.data.check.value.adults).toBe(2);
     expect(r.data.check.missing.join(" ")).toMatch(/confirmed total number of adults/);
-    expect(r.data.check.missing.join(" ")).toMatch(/mentions 12 people but the interpretation has 2/);
+    expect(r.data.check.missing.join(" ")).toMatch(/mentions 14 people but the interpretation has 2/);
   });
 
   it("headcount hints are read from the message deterministically", () => {
-    expect(headcountMentioned("12 players and 2 coaches")).toBe(12);
+    expect(headcountMentioned("12 players and 2 coaches")).toBe(14);
+    expect(headcountMentioned("9 players who need separate beds, 1 coach and a driver")).toBe(10);
+    expect(headcountMentioned("2 adults and 3 children")).toBe(5);
+    expect(headcountMentioned("12 players and 2 coaches. The 2 coaches need their own rooms")).toBe(14);
     expect(headcountMentioned("a church choir of 14 adults, 4 couples")).toBe(14);
     expect(headcountMentioned("arriving 11 December for 3 nights")).toBeUndefined();
+  });
+
+  it("an interpretation of 12 for '12 players and 2 coaches' is flagged (found in rehearsal)", async () => {
+    const r = await interpretEnquiry(mocked('{"checkIn":"2026-12-11","checkOut":"2026-12-13","adults":12,"groupLeaders":2}').sel, TEXT, ctx);
+    expect(r.data.check.missing.join(" ")).toMatch(/mentions 14 people but the interpretation has 12/);
   });
 
   it("no false alarms on the seeded demo enquiries when the count is right", async () => {

@@ -194,18 +194,27 @@ function rank(u: GuestUnit): number {
   return { couple: 0, family: 1, individual: 2, friends: 2, "group-leader": 3, driver: 4 }[u.kind];
 }
 
-const PEOPLE = "adults?|people|persons?|guests?|pax|players?|members?|learners?|students?|delegates?|pilgrims?|athletes?|singers?|participants?|ladies|men|women|kids|children|girls|boys|family members";
+const PEOPLE = "adults?|people|persons?|guests?|pax|players?|members?|learners?|students?|delegates?|pilgrims?|athletes?|singers?|participants?|coaches|coach|drivers?|leaders?|teachers?|parents?|staff|officials?|ladies|men|women|kids|children|child|girls|boys|babies|baby|family members";
 
 /**
- * Deterministic cross-check of the guest count against the original message: the largest
- * "<number> <people word>" phrase in the text. Used to flag interpretations that undercount a group.
+ * Deterministic cross-check of the guest count against the original message: the SUM of all
+ * "<number> <people word>" phrases ("12 players and 2 coaches" -> 14). Overlapping phrases
+ * ("14 adults including 2 coaches") can over-count; that only makes staff confirm the number,
+ * and an identical repeated phrase is counted once,
+ * which is the safe direction. Used to flag interpretations that undercount a group.
  */
 export function headcountMentioned(text: string): number | undefined {
-  let best: number | undefined;
-  const re = new RegExp(`\\b(\\d{1,3})\\s+(?:[a-z-]+\\s+)?(?:${PEOPLE})\\b`, "gi");
+  // Repeated mentions of the same group ("2 coaches ... the 2 coaches") are counted once.
+  const seen = new Set<string>();
+  let sum = 0;
+  const re = new RegExp(`\\b(\\d{1,3})\\s+(?:[a-z-]+\\s+)?(${PEOPLE})\\b`, "gi");
   for (const m of text.matchAll(re)) {
     const n = Number(m[1]);
-    if (n > 0 && n <= 200 && (best === undefined || n > best)) best = n;
+    const key = `${n} ${m[2].toLowerCase().replace(/(es|s)$/, "")}`;
+    if (n > 0 && n <= 200 && !seen.has(key)) {
+      seen.add(key);
+      sum += n;
+    }
   }
-  return best;
+  return seen.size ? sum : undefined;
 }
