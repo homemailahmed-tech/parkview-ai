@@ -1,0 +1,116 @@
+{
+  "calls": [
+    {
+      "n": 1,
+      "kind": "voice",
+      "at": "2026-11-01T11:06:31.728Z",
+      "worstUSD": 0.00046574999999999996,
+      "status": 200,
+      "costUSD": 0.000468,
+      "responseId": "voyager/transcribe/2A428139878B4AFF8FDECE79F1A01328",
+      "model": "muse-voice-transcribe-1.0",
+      "audioDurationMs": 9360
+    },
+    {
+      "n": 2,
+      "kind": "voice",
+      "at": "2026-11-01T11:06:33.993Z",
+      "worstUSD": 0.00046574999999999996,
+      "status": 200,
+      "costUSD": 0.000468,
+      "responseId": "voyager/transcribe/4CC477C244A24B33837AE6E916E0D582",
+      "model": "muse-voice-transcribe-1.0",
+      "audioDurationMs": 9360
+    },
+    {
+      "n": 3,
+      "kind": "chat",
+      "at": "2026-11-01T11:06:36.435Z",
+      "worstUSD": 0.0059575,
+      "status": 200,
+      "costUSD": 0.0028185,
+      "responseId": "chatcmpl-01a196ca-431f-7135-8e45-1d075d119d1c",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 395,
+        "completionTokens": 547,
+        "reasoningTokens": 438
+      }
+    },
+    {
+      "n": 4,
+      "kind": "chat",
+      "at": "2026-11-01T11:06:40.329Z",
+      "worstUSD": 0.005993750000000001,
+      "status": 200,
+      "costUSD": 0.00313675,
+      "responseId": "chatcmpl-01a196ca-5433-7475-bc51-0245bc1f65c5",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 415,
+        "completionTokens": 616,
+        "reasoningTokens": 485
+      }
+    },
+    {
+      "n": 5,
+      "kind": "chat",
+      "at": "2026-11-01T11:06:44.719Z",
+      "worstUSD": 0.00594625,
+      "status": 200,
+      "costUSD": 0.00265175,
+      "responseId": "chatcmpl-01a196ca-5fed-7183-aa37-fb212d1e509c",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 401,
+        "completionTokens": 506,
+        "reasoningTokens": 403
+      }
+    },
+    {
+      "n": 6,
+      "kind": "chat",
+      "at": "2026-11-01T11:06:47.704Z",
+      "worstUSD": 0.0056387500000000005,
+      "status": 200,
+      "costUSD": 0.00202425,
+      "responseId": "chatcmpl-01a196ca-68c8-728d-9a31-906a6d0dcb37",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 239,
+        "completionTokens": 406,
+        "reasoningTokens": 332
+      }
+    },
+    {
+      "n": 7,
+      "kind": "chat",
+      "at": "2026-11-01T11:06:50.127Z",
+      "worstUSD": 0.0062275,
+      "status": 200,
+      "costUSD": 0.00325575,
+      "responseId": "chatcmpl-01a196ca-744c-708e-8c93-ecd31d680333",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 636,
+        "completionTokens": 579,
+        "reasoningTokens": 469
+      }
+    },
+    {
+      "n": 8,
+      "kind": "chat",
+      "at": "2026-11-01T11:06:52.941Z",
+      "worstUSD": 0.0054175000000000004,
+      "status": 200,
+      "costUSD": 0.00137625,
+      "responseId": "chatcmpl-01a196ca-7bcf-760a-ab04-6dba072cf655",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 149,
+        "completionTokens": 280,
+        "reasoningTokens": 231
+      }
+    }
+  ]
+}

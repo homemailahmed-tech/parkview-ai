@@ -19,6 +19,7 @@ Run `git log --reverse --format='%ad  %s' --date=iso` to see every commit.
 | 1 Nov 2026 | **Head-count guard** for a real under-count found in live testing; **booking-safeguard tests**; price filter on AI explanations; `reasoning_effort` and token-usage tracking |
 | 1 Nov 2026 | Product name "ParkView AI"; fictional room names; guest-count guard sums all numbered groups in a message (found in demo rehearsal); quote table fits phone screens (155 tests) |
 | 1 Nov 2026 | **Hard enquiries** (isiZulu greeting + relative date, choir correction, Afrikaans family); interpreter returns **clarification questions**; deterministic **relative-date confirmation**; **AI clarification reply to the guest** with a guard against prices and booking promises |
+| 1 Nov 2026 | **Honest labels** ("LOCAL TEST — MOCK RESPONSE" for any non-Meta endpoint); in-app spend ledger with hard caps; **Stage 4 live tests**: 8 calls, US$0.0162, 6/6 Muse Spark passed, voice worked with transcription errors ([details](LIVE_META_VERIFICATION.md)) (197 tests) |
 | 1 Nov 2026 | **Voice dictation**: browser microphone → 16 kHz WAV → Muse Voice Transcribe file endpoint → editable transcript. The browser end-to-end test found and fixed a security header that blocked the microphone (176 tests) |
 
 ## What is live Meta AI and what is not
@@ -26,9 +27,10 @@ Run `git log --reverse --format='%ad  %s' --date=iso` to see every commit.
 | Feature | Status |
 |---|---|
 | Interpreting guest enquiries with Muse Spark 1.3 (Meta Model API) | **Verified live** (1 Nov 2026) |
-| AI explanation of room options, AI quote greeting, concierge question interpretation | Integrated; tested with **mocked** responses only |
-| Clarification questions and clarification reply (Muse Spark) | Integrated; mocked tests; **live verification pending** |
-| Voice dictation (Muse Voice Transcribe) | Integrated; browser end-to-end tested against a **local mock** of Meta's endpoint; **live verification pending** |
+| Option explanations and quote greeting (Muse Spark) | **Verified live** (1 Nov 2026, Stage 4) |
+| Concierge question interpretation | Integrated; tested with **mocked** responses only |
+| Hard enquiries, clarification questions and clarification reply (Muse Spark) | **Verified live** (1 Nov 2026, Stage 4): 3/3 hard enquiries and the clarifying reply passed |
+| Voice dictation (Muse Voice Transcribe) | **Live calls verified** (1 Nov 2026). Synthetic-speech accuracy about 93 % clean / 81 % noisy, with number errors caught by review and guards. Not tested with human speech |
 | WhatsApp | **Simulated**: the app produces copy-ready text; no WhatsApp API |
 | Payments | **Simulated** deposit records only |
 

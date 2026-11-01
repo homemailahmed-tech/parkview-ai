@@ -1,0 +1,285 @@
+{
+  "mode": "LIVE (https://api.meta.ai/v1)",
+  "today": "2026-11-01",
+  "caps": {
+    "file": "(private ledger path removed)",
+    "maxCalls": 8,
+    "maxUSD": 0.04,
+    "maxByKind": {
+      "chat": 6,
+      "voice": 2
+    }
+  },
+  "rows": [
+    {
+      "id": "V1",
+      "kind": "voice",
+      "at": "2026-11-01T11:06:33.993Z",
+      "input": "clean16k.wav: synthetic speech \"twelve netball girls, two coaches and the bus driver, 13 November, two nights, one coach cannot use stairs\"",
+      "status": "FAIL",
+      "source": "meta",
+      "model": "muse-voice-transcribe-1.0",
+      "id_": "voyager/transcribe/2A428139878B4AFF8FDECE79F1A01328",
+      "latencyMs": 2263,
+      "output": {
+        "transcript": "Hello, we have 12 ball girls, two coaches and the bus driver arriving on the 13th of November for nights, one coach cannot use stairs..",
+        "audioDurationMs": 9360
+      },
+      "checks": {
+        "live": true,
+        "netball": false,
+        "twelve": true,
+        "coaches": true,
+        "driver": true,
+        "stairs": true
+      },
+      "note": "1 ledger call(s)"
+    },
+    {
+      "id": "V2",
+      "kind": "voice",
+      "at": "2026-11-01T11:06:36.415Z",
+      "input": "noisy16k.wav: synthetic speech \"twelve netball girls, two coaches and the bus driver, 13 November, two nights, one coach cannot use stairs\"",
+      "status": "FAIL",
+      "source": "meta",
+      "model": "muse-voice-transcribe-1.0",
+      "id_": "voyager/transcribe/4CC477C244A24B33837AE6E916E0D582",
+      "latencyMs": 2418,
+      "output": {
+        "transcript": "hello. We We have well little girls two coaches and the bus driver arriving on the 13th of November for tonights one coach cannot use stairs.",
+        "audioDurationMs": 9360
+      },
+      "checks": {
+        "live": true,
+        "netball": false,
+        "twelve": false,
+        "coaches": true,
+        "driver": true,
+        "stairs": true
+      },
+      "note": "1 ledger call(s)"
+    },
+    {
+      "id": "I-H-1",
+      "kind": "interpret",
+      "at": "2026-11-01T11:06:40.327Z",
+      "input": "Sawubona! We have 12 netball girls, two coaches and the bus driver coming the Friday after next. One coach uses crutches, so please no stairs. The driver needs his own room. We might stay two nights. Ngiyabonga, Thandeka",
+      "status": "PASS",
+      "source": "meta",
+      "model": "muse-spark-1.3",
+      "id_": "chatcmpl-01a196ca-431f-7135-8e45-1d075d119d1c",
+      "latencyMs": 3888,
+      "output": {
+        "value": {
+          "guestName": "Thandeka",
+          "checkIn": "2026-11-13",
+          "adults": 3,
+          "children": 12,
+          "drivers": 1,
+          "groundFloorGuests": 1,
+          "notes": [
+            "One coach uses crutches, needs no stairs"
+          ],
+          "clarifications": [
+            "Are the 12 netball girls children or adults?",
+            "Confirm staying two nights and check-out date?",
+            "Do the two coaches need their own rooms?"
+          ]
+        },
+        "missing": [
+          "to clarify: Are the 12 netball girls children or adults?",
+          "to clarify: Confirm staying two nights and check-out date?",
+          "to clarify: Do the two coaches need their own rooms?",
+          "check-out date or number of nights",
+          "dates to confirm with the guest: they wrote \"Friday after next\" (resolved from 2026-11-01)"
+        ],
+        "issues": [],
+        "usage": {
+          "promptTokens": 395,
+          "completionTokens": 547,
+          "reasoningTokens": 438
+        }
+      },
+      "checks": {
+        "live": true,
+        "total15": true,
+        "driverOwnRoom": true,
+        "noStairs": true,
+        "datesFlaggedForConfirmation": true,
+        "twoNightsUncertainHandled": true
+      },
+      "note": "1 ledger call(s)"
+    },
+    {
+      "id": "I-H-2",
+      "kind": "interpret",
+      "at": "2026-11-01T11:06:44.717Z",
+      "input": "Hi there 👋 it's Mpho from the choir. Change of plans from what I said yesterday: not 14 anymore, now 16 of us. The 4 married couples still want to share a bed, everyone else separate beds pls. And make it 3 nights instead of 2, arriving 21 Nov. Oh and gogo is coming too, she can't do stairs.",
+      "status": "PASS",
+      "source": "meta",
+      "model": "muse-spark-1.3",
+      "id_": "chatcmpl-01a196ca-5433-7475-bc51-0245bc1f65c5",
+      "latencyMs": 4387,
+      "output": {
+        "value": {
+          "guestName": "Mpho",
+          "checkIn": "2026-11-21",
+          "checkOut": "2026-11-24",
+          "nights": 3,
+          "adults": 16,
+          "couples": 4,
+          "groundFloorGuests": 1,
+          "separateBeds": true,
+          "notes": [
+            "Group size changed from 14 to 16",
+            "Gogo cannot do stairs, needs ground floor"
+          ],
+          "clarifications": [
+            "Is gogo included in the 16 or extra?",
+            "Are all 16 guests adults, any children?"
+          ]
+        },
+        "missing": [
+          "to clarify: Is gogo included in the 16 or extra?",
+          "to clarify: Are all 16 guests adults, any children?"
+        ],
+        "issues": [],
+        "usage": {
+          "promptTokens": 415,
+          "completionTokens": 616,
+          "reasoningTokens": 485
+        }
+      },
+      "checks": {
+        "live": true,
+        "arrive21Nov": true,
+        "threeNights": true,
+        "couples4": true,
+        "gogoQueriedOrCounted": true,
+        "noStairs": true
+      },
+      "note": "1 ledger call(s)"
+    },
+    {
+      "id": "I-H-3",
+      "kind": "interpret",
+      "at": "2026-11-01T11:06:47.703Z",
+      "input": "Goeie môre! Ons is 'n gesin van vyf – twee volwassenes en drie kinders – plus my ouma wat nie trappe kan klim nie. Kan ons vir 'n week bly vanaf 14 Desember? Selfsorg sou lekker wees. Dankie, Annelie",
+      "status": "PASS",
+      "source": "meta",
+      "model": "muse-spark-1.3",
+      "id_": "chatcmpl-01a196ca-5fed-7183-aa37-fb212d1e509c",
+      "latencyMs": 2983,
+      "output": {
+        "value": {
+          "guestName": "Annelie",
+          "checkIn": "2026-12-14",
+          "checkOut": "2026-12-21",
+          "nights": 7,
+          "adults": 3,
+          "children": 3,
+          "groundFloorGuests": 1,
+          "selfCatering": true,
+          "families": [
+            {
+              "adults": 3,
+              "children": 3
+            }
+          ],
+          "notes": [
+            "Grandmother cannot climb stairs"
+          ]
+        },
+        "missing": [],
+        "issues": [],
+        "usage": {
+          "promptTokens": 401,
+          "completionTokens": 506,
+          "reasoningTokens": 403
+        }
+      },
+      "checks": {
+        "live": true,
+        "adults3": true,
+        "children3": true,
+        "arrive14Dec": true,
+        "sevenNights": true,
+        "selfCatering": true,
+        "noStairs": true
+      },
+      "note": "1 ledger call(s)"
+    },
+    {
+      "id": "C1",
+      "kind": "clarify",
+      "at": "2026-11-01T11:06:49.951Z",
+      "input": "clarifying reply for H-1",
+      "status": "PASS",
+      "source": "meta",
+      "model": "muse-spark-1.3",
+      "id_": "chatcmpl-01a196ca-68c8-728d-9a31-906a6d0dcb37",
+      "latencyMs": 2246,
+      "output": {
+        "text": "Hello Thandeka, thank you for your message!\nCould you please confirm your exact arrival date and how many nights you will stay?\nAre the 12 netball girls children or adults?\nCould you confirm if you are staying two nights and what your check-out date would be?\nDo the two coaches need their own rooms?",
+        "usage": {
+          "promptTokens": 239,
+          "completionTokens": 406,
+          "reasoningTokens": 332
+        }
+      },
+      "checks": {
+        "live": true,
+        "notReplaced": true
+      },
+      "note": "1 ledger call(s)"
+    },
+    {
+      "id": "E1",
+      "kind": "explain",
+      "at": "2026-11-01T11:06:52.940Z",
+      "input": "choir options A/B (engine facts)",
+      "status": "PASS",
+      "source": "meta",
+      "model": "muse-spark-1.3",
+      "id_": "chatcmpl-01a196ca-744c-708e-8c93-ecd31d680333",
+      "latencyMs": 2812,
+      "output": {
+        "text": "Hi Lindiwe, here are two options for the group.\nOption A is the most efficient setup, with Couple 3 and Couple 4 sharing the Family Room, and Guest 2, Guest 3 and Guest 4 together in the Courtyard Triple.\nOption B offers more privacy and comfort, giving most couples and singles their own rooms, with only Guest 3 and Guest 4 sharing in the Private Entrance Triple.\nDriver 1 stays in the Ground Floor Double in both options.",
+        "usage": {
+          "promptTokens": 636,
+          "completionTokens": 579,
+          "reasoningTokens": 469
+        }
+      },
+      "checks": {
+        "live": true,
+        "notReplaced": true
+      },
+      "note": "1 ledger call(s)"
+    },
+    {
+      "id": "G1",
+      "kind": "greeting",
+      "at": "2026-11-01T11:06:54.858Z",
+      "input": "choir quote greeting",
+      "status": "PASS",
+      "source": "meta",
+      "model": "muse-spark-1.3",
+      "id_": "chatcmpl-01a196ca-7bcf-760a-ab04-6dba072cf655",
+      "latencyMs": 1916,
+      "output": {
+        "text": "Hello Lindiwe, thank you so much for considering Parkside Demo Guest House! We're delighted to share the option you asked about below. Please have a look and let us know what you think.",
+        "usage": {
+          "promptTokens": 149,
+          "completionTokens": 280,
+          "reasoningTokens": 231
+        }
+      },
+      "checks": {
+        "live": true,
+        "notReplaced": true
+      },
+      "note": "1 ledger call(s)"
+    }
+  ]
+}
