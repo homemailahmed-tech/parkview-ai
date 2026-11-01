@@ -11,6 +11,8 @@ export interface SpendConfig {
   file: string;
   maxCalls: number;
   maxUSD: number;
+  /** Optional per-kind limits, e.g. at most 6 chat and 2 voice calls. */
+  maxByKind?: Partial<Record<"chat" | "voice", number>>;
 }
 
 /** Reported prices (USD): Muse Spark per token; Muse Voice Transcribe per millisecond of audio ($0.18/hour). */
@@ -49,6 +51,8 @@ export function spentUSD(l: Ledger): number {
 export function reserve(cfg: SpendConfig, kind: LedgerEntry["kind"], worstUSD: number): LedgerEntry {
   const l = load(cfg.file);
   if (l.calls.length >= cfg.maxCalls) throw new AIProviderError("budget", `local spend cap reached: ${cfg.maxCalls} calls used`);
+  const kindLimit = cfg.maxByKind?.[kind];
+  if (kindLimit !== undefined && l.calls.filter((c) => c.kind === kind).length >= kindLimit) throw new AIProviderError("budget", `local spend cap reached: ${kindLimit} ${kind} calls used`);
   if (spentUSD(l) + worstUSD > cfg.maxUSD) throw new AIProviderError("budget", `local spend cap reached: US$${cfg.maxUSD} would be exceeded`);
   const entry: LedgerEntry = { n: l.calls.length + 1, kind, at: new Date().toISOString(), worstUSD };
   l.calls.push(entry);

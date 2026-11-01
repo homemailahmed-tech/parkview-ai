@@ -44,6 +44,8 @@ export interface AIEnv {
   AI_SPEND_LEDGER?: string;
   AI_SPEND_MAX_CALLS?: string;
   AI_SPEND_MAX_USD?: string;
+  AI_SPEND_MAX_CHAT?: string;
+  AI_SPEND_MAX_VOICE?: string;
   AI_EXTRA_ALLOWED_MODELS?: string;
   AI_ALLOW_NON_META_DEV_MODEL?: string;
   AI_DAILY_CALL_LIMIT?: string;
@@ -136,7 +138,15 @@ export function resolveAIConfig(env: AIEnv): ResolvedAIConfig {
     maxRetries: int(env.AI_MAX_RETRIES, 1, 0, 3),
     maxOutputTokens: int(env.AI_MAX_OUTPUT_TOKENS, 800, 64, 4_000),
     spend: t(env.AI_SPEND_LEDGER)
-      ? { file: t(env.AI_SPEND_LEDGER), maxCalls: int(env.AI_SPEND_MAX_CALLS, 0, 0, 100), maxUSD: Math.max(0, Number(env.AI_SPEND_MAX_USD) || 0) }
+      ? {
+          file: t(env.AI_SPEND_LEDGER),
+          maxCalls: int(env.AI_SPEND_MAX_CALLS, 0, 0, 100),
+          maxUSD: Math.max(0, Number(env.AI_SPEND_MAX_USD) || 0),
+          maxByKind: {
+            ...(t(env.AI_SPEND_MAX_CHAT) ? { chat: int(env.AI_SPEND_MAX_CHAT, 0, 0, 100) } : {}),
+            ...(t(env.AI_SPEND_MAX_VOICE) ? { voice: int(env.AI_SPEND_MAX_VOICE, 0, 0, 100) } : {}),
+          },
+        }
       : undefined,
   };
   // Muse Spark spends output tokens on hidden reasoning; "minimal" was verified live. "none" disables the field.

@@ -111,6 +111,16 @@ describe("spend ledger: hard caps before every request", () => {
     expect(f).toHaveBeenCalledTimes(2);
   });
 
+  it("enforces per-kind limits (owner: at most 6 Muse Spark and 2 voice calls)", () => {
+    const cfg = { file: tmp(), maxCalls: 8, maxUSD: 1, maxByKind: { chat: 6, voice: 2 } };
+    reserve(cfg, "voice", 0.0001); reserve(cfg, "voice", 0.0001);
+    expect(() => reserve(cfg, "voice", 0.0001)).toThrow(/2 voice calls used/);
+    for (let i = 0; i < 6; i++) reserve(cfg, "chat", 0.001);
+    expect(() => reserve(cfg, "chat", 0.001)).toThrow(/8 calls used|6 chat calls used/);
+    const env2 = selectProvider(env(undefined, { AI_SPEND_LEDGER: tmp(), AI_SPEND_MAX_CALLS: "8", AI_SPEND_MAX_USD: "0.04", AI_SPEND_MAX_CHAT: "6", AI_SPEND_MAX_VOICE: "2" }));
+    expect(env2.config.live?.spend?.maxByKind).toEqual({ chat: 6, voice: 2 });
+  });
+
   it("refuses a call whose worst case would exceed the money cap", () => {
     const file = tmp();
     const cfg = { file, maxCalls: 8, maxUSD: 0.01 };
