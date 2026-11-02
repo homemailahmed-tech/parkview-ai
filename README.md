@@ -33,7 +33,7 @@ Built for the Meta Global AI Developer Hackathon 2026.
 
 **Run it:**
 ```bash
-npm ci && npm test        # 233 tests, no network or keys needed
+npm ci && npm test        # 256 tests, no network or keys needed
 npm run dev               # http://localhost:3000, simulation mode by default
 # Live Meta mode (server-side key, never sent to the browser):
 AI_MODE=meta-model-api META_MODEL_API_KEY=… AI_JSON_MODE=prompt npm run dev
@@ -51,7 +51,7 @@ Try **Enquiries → + New enquiry → Hard 1 → ➤ → Read with AI → Draft 
 - Unconfirmed facts (dates, head-count, ages, access) make a booking **provisional**: the owner cannot approve or confirm it until they are resolved.
 - Owner-only approval and payment.
 - Live-call budget; keys stay server-side.
-- 233 automated tests, including hostile model output and replays of real live Meta outputs.
+- 256 automated tests, including hostile model output and replays of real live Meta outputs.
 
 **Built with AI assistance:** the code was written with an AI coding assistant (Claude Code) under the developer's direction (see [`docs/HACKATHON_WORK.md`](docs/HACKATHON_WORK.md)). Meta models are the only AI used *inside* the product. Model research: [`docs/META_MODELS.md`](docs/META_MODELS.md).
 
@@ -73,7 +73,7 @@ Try **Enquiries → + New enquiry → Hard 1 → ➤ → Read with AI → Draft 
 npm install
 cp .env.example .env.local   # optional — defaults to simulation mode
 npm run dev                  # http://localhost:3000
-npm test                     # 233 automated tests
+npm test                     # 256 automated tests
 npm run typecheck
 npm run build
 ```
@@ -206,7 +206,7 @@ Halaal eateries and events are *fictional placeholders*. The guest house locatio
 
 ## Testing
 
-`npm test` runs 233 tests across: open questions and provisional bookings, requirement checks (self-catering, stairs, top bunks), replay labelling, replays of real Stage 4 and Stage 5 Meta outputs through the guards, source-label honesty (live/mock/simulation/failure), spend caps, voice (WAV encoding, Muse Voice Transcribe request contract, route limits, permissions), hard enquiries (relative dates, clarifications, clarification replies), booking safeguards against hostile model output (availability, capacity, prices, approval, payment, head-count, private data), room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
+`npm test` runs 256 tests across: Evidence Trail (fabricated quotes, wrong numbers, corrections, negation, real Stage 6 outputs), quote integrity (stale quotes blocked), open questions and provisional bookings, requirement checks (self-catering, stairs, top bunks), replay labelling, replays of real Stage 4 and Stage 5 Meta outputs through the guards, source-label honesty (live/mock/simulation/failure), spend caps, voice (WAV encoding, Muse Voice Transcribe request contract, route limits, permissions), hard enquiries (relative dates, clarifications, clarification replies), booking safeguards against hostile model output (availability, capacity, prices, approval, payment, head-count, private data), room capacity, couples & separate beds, accessibility, group allocation (drivers/leaders, families, Option A/B),
 conflicting bookings, quotation totals & tamper detection, owner-approval and payment guards, invalid/missing enquiry information,
 Meta AI providers and switchboard (Meta Model API, Groq, OpenRouter, open-weight: config, model classes, mocked success/failure modes,
 free-only guard, catalogue check, budget, connection test), API routes (no key leakage), secret hygiene,

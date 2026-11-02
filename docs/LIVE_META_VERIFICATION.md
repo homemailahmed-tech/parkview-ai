@@ -177,3 +177,34 @@ Replayed offline in `tests/liveReplay.test.ts`:
 **Model accuracy, stated plainly:** Muse Spark miscounted guests in three live runs (2 of 14, 1 of 15, 8 of 16). The app's guards flagged the last two live; the fixes listed above came after the runs.
 
 **Voice:** still only tested on synthetic English speech (Stage 4). No claim is made for human voices, South African accents, isiZulu or Afrikaans speech.
+
+## Stage 6 — Evidence Trail live verification (2 Nov 2026)
+
+- **Approval:** at most 5 Muse Spark calls and US$0.03; plan and pass criteria fixed before the run (`docs/competition/STAGE6_PLAN.md`).
+- **What was live:** 3 evidence calls only. The facts came from the genuine Stage 5 extractions, replayed offline, so the extractions were not re-run.
+- **Evidence files:**
+  - `docs/evidence/stage6-evidence-live.json` (raw model output, verdicts, response IDs);
+  - `docs/evidence/stage6-ledger.json` (cost);
+  - `docs/evidence/stage6-replay.json` (genuine Stage 5 and 6 responses for labelled replay filming).
+
+| # | Scenario | Response id | Tokens in / out (reasoning) | US$ | Result |
+|---|---|---|---|---|---|
+| 1 | H-3 Afrikaans | chatcmpl-01a19bf0-5a52… | 395 / 610 (408) | 0.00309 | 4/4 stated facts verified; correct but added-up values (total 6, adults 3) and the derived check-out flagged as **not stated** |
+| 2 | H-2 Choir | chatcmpl-01a19bf0-6acc… | 413 / 561 (353) | 0.00290 | 5/5 stated facts verified (incl. "make it 3 nights instead of 2" → 3); **parties' 8 guests = CONFLICT** ("now 16 of us"); 8 adults = not stated |
+| 3 | H-1 Netball | chatcmpl-01a19bf0-7725… | 347 / 540 (396) | 0.00273 | 2/2 stated facts verified; **parties' 1 guest = CONFLICT** (12 girls, 2 coaches, driver); relative date = uncertain |
+
+**Total: 3 calls, US$0.00872.** All runs to date: **20 genuine calls** (18 Muse Spark, 2 voice), about **US$0.0495**.
+
+**Pass criteria, all met:**
+- (a) every displayed quote is in the message;
+- (b) the choir's 8 is flagged;
+- (c) no doubtful head-count shown as confirmed;
+- (d) coverage 11/11 (≥ 80 % required);
+- (e) 0 invented quotes;
+- (f) IDs and costs recorded.
+
+**What this proves and what it does not:**
+- **Code proves:** each quote exists in the message and contains the fact's number or date.
+- **Not proven:** that the model understood the meaning; a matching quote can still be the wrong evidence.
+- **Corrections, negation, several numbers and open head-count questions** are handled conservatively: uncertain, never "stated".
+- **Single-person needs** ("she can't do stairs") are accepted as "one person" without a number.

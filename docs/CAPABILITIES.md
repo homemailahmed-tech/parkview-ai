@@ -4,7 +4,8 @@ Evidence for every advertised capability (status on 1 Nov 2026). Live evidence a
 
 **Categories:**
 - **META LIVE**: tested with genuine calls to Meta's API (`https://api.meta.ai`), with recorded response ids.
-- **DETERMINISTIC**: ordinary code, covered by automated tests (`npm test`, 233 tests).
+- **Evidence Trail (META LIVE + DETERMINISTIC):** Muse Spark cites the guest's words for each booking fact; code verifies every quote and number. Verified live on 2 Nov (3 calls; `docs/LIVE_META_VERIFICATION.md`, Stage 6).
+- **DETERMINISTIC**: ordinary code, covered by automated tests (`npm test`, 256 tests).
 - **SIMULATION**: a stand-in, always labelled in the app.
 - **NOT BUILT**: roadmap only.
 
