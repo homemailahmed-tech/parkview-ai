@@ -86,7 +86,7 @@ The AI did not produce any availability, price or booking status.
 - 8 authenticated requests to `https://api.meta.ai/v1`, approved by the owner.
 - Hard caps enforced in the app before every request: 8 calls (6 Muse Spark + 2 Muse Voice Transcribe), US$0.04.
 - No retries. `max_tokens` 1200. `reasoning_effort` minimal.
-- Pass criteria were written **before** the run (`docs/competition/video-tools/live-suite.check.ts`).
+- Pass criteria were written **before** the run (`docs/verification/live-suite.check.ts`).
 - Raw evidence: [`docs/evidence/stage4-live-evidence.json`](evidence/stage4-live-evidence.json) and [`stage4-ledger.json`](evidence/stage4-ledger.json).
 - Reference date: Sunday 1 Nov 2026.
 
@@ -180,7 +180,7 @@ Replayed offline in `tests/liveReplay.test.ts`:
 
 ## Stage 6 — Evidence Trail live verification (2 Nov 2026)
 
-- **Approval:** at most 5 Muse Spark calls and US$0.03; plan and pass criteria fixed before the run (`docs/competition/STAGE6_PLAN.md`).
+- **Approval:** at most 5 Muse Spark calls and US$0.03; plan and pass criteria fixed before the run (`docs/verification/STAGE6_PLAN.md`, harness `docs/verification/stage6-evidence.check.ts`).
 - **What was live:** 3 evidence calls only. The facts came from the genuine Stage 5 extractions, replayed offline, so the extractions were not re-run.
 - **Evidence files:**
   - `docs/evidence/stage6-evidence-live.json` (raw model output, verdicts, response IDs);

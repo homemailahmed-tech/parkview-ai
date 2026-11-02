@@ -6,6 +6,8 @@
 Built for the Meta Global AI Developer Hackathon 2026.
 
 > **Built during the Meta Global AI Developer Hackathon 2026** (27 Oct – 4 Nov). See [`docs/HACKATHON_WORK.md`](docs/HACKATHON_WORK.md) for what was built when, and what is live Meta AI versus simulated.
+
+> **New codebase:** everything in this repository was written during the building period, starting 27 Oct 2026 (first code commit 08:53 UTC). It does not contain or build on any earlier product. Private planning and competition paperwork were removed from this public copy; commit dates are unchanged.
 >
 > **Demo data only.** *Parkside Demo Guest House*, its guests, phone numbers, bookings, rates and address are fictional.
 > No real guest data, payments or WhatsApp messages are used.
