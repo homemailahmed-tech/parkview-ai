@@ -1,0 +1,52 @@
+{
+  "calls": [
+    {
+      "n": 1,
+      "kind": "chat",
+      "at": "2026-11-02T11:06:18.981Z",
+      "worstUSD": 0.006762499999999999,
+      "status": 200,
+      "costUSD": 0.0030862500000000005,
+      "responseId": "chatcmpl-01a19bf0-5a52-70c5-9fbe-c3e7433a8737",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 395,
+        "completionTokens": 610,
+        "reasoningTokens": 408
+      },
+      "output": "{\"evidence\": [{\"key\": \"checkIn\", \"quote\": \"vanaf 14 Desember\", \"status\": \"stated\"}, {\"key\": \"checkOut\", \"quote\": null, \"status\": \"not_stated\"}, {\"key\": \"nights\", \"quote\": \"vir 'n week bly\", \"status\": \"stated\"}, {\"key\": \"totalGuests\", \"quote\": null, \"status\": \"not_stated\"}, {\"key\": \"adults\", \"quote\": \"twee volwassenes\", \"status\": \"contradicted\"}, {\"key\": \"children\", \"quote\": \"drie kinders\", \"status\": \"stated\"}, {\"key\": \"accessNeed\", \"quote\": \"wat nie trappe kan klim nie\", \"status\": \"stated\"}, {\"key\": \"selfCatering\", \"quote\": \"Selfsorg sou lekker wees\", \"status\": \"stated\"}]}"
+    },
+    {
+      "n": 2,
+      "kind": "chat",
+      "at": "2026-11-02T11:06:22.751Z",
+      "worstUSD": 0.006816249999999999,
+      "status": 200,
+      "costUSD": 0.0029005000000000003,
+      "responseId": "chatcmpl-01a19bf0-6acc-72e0-b353-befd906b02ae",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 413,
+        "completionTokens": 561,
+        "reasoningTokens": 353
+      },
+      "output": "{\"evidence\": [{\"key\": \"checkIn\", \"quote\": \"arriving 21 Nov.\", \"status\": \"stated\"}, {\"key\": \"checkOut\", \"quote\": null, \"status\": \"not_stated\"}, {\"key\": \"nights\", \"quote\": \"make it 3 nights instead of 2,\", \"status\": \"corrected\"}, {\"key\": \"totalGuests\", \"quote\": \"now 16 of us.\", \"status\": \"contradicted\"}, {\"key\": \"adults\", \"quote\": null, \"status\": \"not_stated\"}, {\"key\": \"couples\", \"quote\": \"The 4 married couples still want to share a bed,\", \"status\": \"stated\"}, {\"key\": \"accessNeed\", \"quote\": \"she can't do stairs.\", \"status\": \"stated\"}, {\"key\": \"separateBeds\", \"quote\": \"everyone else separate beds pls.\", \"status\": \"stated\"}]}"
+    },
+    {
+      "n": 3,
+      "kind": "chat",
+      "at": "2026-11-02T11:06:26.963Z",
+      "worstUSD": 0.0066875,
+      "status": 200,
+      "costUSD": 0.0027287500000000003,
+      "responseId": "chatcmpl-01a19bf0-7725-7760-9adf-a534a9c388cc",
+      "model": "muse-spark-1.3",
+      "usage": {
+        "promptTokens": 347,
+        "completionTokens": 540,
+        "reasoningTokens": 396
+      },
+      "output": "{\"evidence\": [{\"key\": \"checkIn\", \"quote\": \"coming the Friday after next\", \"status\": \"stated\"}, {\"key\": \"totalGuests\", \"quote\": \"We have 12 netball girls, two coaches and the bus driver\", \"status\": \"contradicted\"}, {\"key\": \"adults\", \"quote\": \"two coaches and the bus driver\", \"status\": \"contradicted\"}, {\"key\": \"privateRoom\", \"quote\": \"The driver needs his own room.\", \"status\": \"stated\"}, {\"key\": \"accessNeed\", \"quote\": \"please no stairs\", \"status\": \"stated\"}]}"
+    }
+  ]
+}

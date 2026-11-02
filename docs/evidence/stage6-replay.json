@@ -1,0 +1,301 @@
+{
+ "mode": "LIVE (https://api.meta.ai/v1) — genuine responses from Stage 5 (1 Nov) and Stage 6 (2 Nov), assembled for labelled replay",
+ "today": "1–2 Nov 2026",
+ "rows": [
+  {
+   "id": "S5-1",
+   "kind": "interpret",
+   "input": "Goeie môre! Ons is 'n gesin van vyf – twee volwassenes en drie kinders – plus my ouma wat nie trappe kan klim nie. Kan ons vir 'n week bly vanaf 14 Desember? Selfsorg sou lekker wees. Dankie, Annelie",
+   "status": "PASS",
+   "source": "meta",
+   "model": "muse-spark-1.3",
+   "id_": "chatcmpl-01a196fc-7003-77ab-961e-885b471c73e6",
+   "latencyMs": 0,
+   "output": {
+    "value": {
+     "guestName": "Annelie",
+     "checkIn": "2026-12-14",
+     "checkOut": "2026-12-21",
+     "nights": 7,
+     "adults": 3,
+     "children": 3,
+     "families": [
+      {
+       "adults": 2,
+       "children": 3
+      }
+     ],
+     "groundFloorGuests": 1,
+     "selfCatering": true,
+     "notes": [
+      "Grandmother cannot climb stairs"
+     ]
+    },
+    "usage": {
+     "promptTokens": 475,
+     "completionTokens": 594,
+     "reasoningTokens": 491
+    }
+   },
+   "capturedIn": "Stage 5 (1 Nov 2026)"
+  },
+  {
+   "id": "S5-2",
+   "kind": "interpret",
+   "input": "Hi there 👋 it's Mpho from the choir. Change of plans from what I said yesterday: not 14 anymore, now 16 of us. The 4 married couples still want to share a bed, everyone else separate beds pls. And make it 3 nights instead of 2, arriving 21 Nov. Oh and gogo is coming too, she can't do stairs.",
+   "status": "PASS",
+   "source": "meta",
+   "model": "muse-spark-1.3",
+   "id_": "chatcmpl-01a196fd-0d9a-7566-8573-6b706b1d2621",
+   "latencyMs": 0,
+   "output": {
+    "value": {
+     "guestName": "Mpho",
+     "checkIn": "2026-11-21",
+     "checkOut": "2026-11-24",
+     "nights": 3,
+     "couples": 4,
+     "groundFloorGuests": 1,
+     "separateBeds": true,
+     "notes": [
+      "16 people total",
+      "gogo coming, cannot do stairs"
+     ],
+     "clarifications": [
+      "Is gogo included in the 16 or extra?",
+      "How many of the 16 are adults vs children?"
+     ]
+    },
+    "usage": {
+     "promptTokens": 489,
+     "completionTokens": 641,
+     "reasoningTokens": 524
+    }
+   },
+   "capturedIn": "Stage 5 (1 Nov 2026)"
+  },
+  {
+   "id": "S5-3",
+   "kind": "interpret",
+   "input": "Sawubona! We have 12 netball girls, two coaches and the bus driver coming the Friday after next. One coach uses crutches, so please no stairs. The driver needs his own room. We might stay two nights. Ngiyabonga, Thandeka",
+   "status": "PASS",
+   "source": "meta",
+   "model": "muse-spark-1.3",
+   "id_": "chatcmpl-01a196fd-960a-77ac-ac99-76ab04e5a67a",
+   "latencyMs": 0,
+   "output": {
+    "value": {
+     "guestName": "Thandeka",
+     "checkIn": "2026-11-13",
+     "drivers": 1,
+     "groundFloorGuests": 1,
+     "notes": [
+      "1 coach uses crutches",
+      "no stairs"
+     ],
+     "clarifications": [
+      "What date is check-out - is it two nights (check-out Sunday 15 November)?",
+      "Are the 12 netball girls adults or children and how many of each?",
+      "Do the two coaches need their own rooms?"
+     ]
+    },
+    "usage": {
+     "promptTokens": 469,
+     "completionTokens": 653,
+     "reasoningTokens": 542
+    }
+   },
+   "capturedIn": "Stage 5 (1 Nov 2026)"
+  },
+  {
+   "id": "S5-4",
+   "kind": "clarify",
+   "input": "Sawubona! We have 12 netball girls, two coaches and the bus driver coming the Friday after next. One coach uses crutches, so please no stairs. The driver needs his own room. We might stay two nights. Ngiyabonga, Thandeka",
+   "status": "PASS",
+   "source": "meta",
+   "model": "muse-spark-1.3",
+   "id_": "chatcmpl-01a196fd-ba2a-7657-9487-93bf717c01b1",
+   "latencyMs": 0,
+   "output": {
+    "text": "Sawubona Thandeka, thank you for your message!\nCould you please confirm your exact arrival date and how many nights you will stay?\nHow many people will be staying in total, including drivers, coaches or helpers?\nAnd how many are adults, and how many are children under 18?\n",
+    "usage": {
+     "promptTokens": 243,
+     "completionTokens": 282,
+     "reasoningTokens": 212
+    }
+   },
+   "capturedIn": "Stage 5 (1 Nov 2026)"
+  },
+  {
+   "id": "E-H-3",
+   "kind": "evidence",
+   "input": "Goeie môre! Ons is 'n gesin van vyf – twee volwassenes en drie kinders – plus my ouma wat nie trappe kan klim nie. Kan ons vir 'n week bly vanaf 14 Desember? Selfsorg sou lekker wees. Dankie, Annelie",
+   "status": "PASS",
+   "source": "meta",
+   "model": "muse-spark-1.3",
+   "id_": "chatcmpl-01a19bf0-5a52-70c5-9fbe-c3e7433a8737",
+   "latencyMs": 3759,
+   "output": {
+    "value": {
+     "evidence": [
+      {
+       "key": "checkIn",
+       "quote": "vanaf 14 Desember",
+       "status": "stated"
+      },
+      {
+       "key": "checkOut",
+       "quote": null,
+       "status": "not_stated"
+      },
+      {
+       "key": "nights",
+       "quote": "vir 'n week bly",
+       "status": "stated"
+      },
+      {
+       "key": "totalGuests",
+       "quote": null,
+       "status": "not_stated"
+      },
+      {
+       "key": "adults",
+       "quote": "twee volwassenes",
+       "status": "contradicted"
+      },
+      {
+       "key": "children",
+       "quote": "drie kinders",
+       "status": "stated"
+      },
+      {
+       "key": "accessNeed",
+       "quote": "wat nie trappe kan klim nie",
+       "status": "stated"
+      },
+      {
+       "key": "selfCatering",
+       "quote": "Selfsorg sou lekker wees",
+       "status": "stated"
+      }
+     ]
+    },
+    "usage": {
+     "promptTokens": 395,
+     "completionTokens": 610,
+     "reasoningTokens": 408
+    }
+   },
+   "capturedIn": "Stage 6 (2 Nov 2026)"
+  },
+  {
+   "id": "E-H-2",
+   "kind": "evidence",
+   "input": "Hi there 👋 it's Mpho from the choir. Change of plans from what I said yesterday: not 14 anymore, now 16 of us. The 4 married couples still want to share a bed, everyone else separate beds pls. And make it 3 nights instead of 2, arriving 21 Nov. Oh and gogo is coming too, she can't do stairs.",
+   "status": "PASS",
+   "source": "meta",
+   "model": "muse-spark-1.3",
+   "id_": "chatcmpl-01a19bf0-6acc-72e0-b353-befd906b02ae",
+   "latencyMs": 4206,
+   "output": {
+    "value": {
+     "evidence": [
+      {
+       "key": "checkIn",
+       "quote": "arriving 21 Nov.",
+       "status": "stated"
+      },
+      {
+       "key": "checkOut",
+       "quote": null,
+       "status": "not_stated"
+      },
+      {
+       "key": "nights",
+       "quote": "make it 3 nights instead of 2,",
+       "status": "corrected"
+      },
+      {
+       "key": "totalGuests",
+       "quote": "now 16 of us.",
+       "status": "contradicted"
+      },
+      {
+       "key": "adults",
+       "quote": null,
+       "status": "not_stated"
+      },
+      {
+       "key": "couples",
+       "quote": "The 4 married couples still want to share a bed,",
+       "status": "stated"
+      },
+      {
+       "key": "accessNeed",
+       "quote": "she can't do stairs.",
+       "status": "stated"
+      },
+      {
+       "key": "separateBeds",
+       "quote": "everyone else separate beds pls.",
+       "status": "stated"
+      }
+     ]
+    },
+    "usage": {
+     "promptTokens": 413,
+     "completionTokens": 561,
+     "reasoningTokens": 353
+    }
+   },
+   "capturedIn": "Stage 6 (2 Nov 2026)"
+  },
+  {
+   "id": "E-H-1",
+   "kind": "evidence",
+   "input": "Sawubona! We have 12 netball girls, two coaches and the bus driver coming the Friday after next. One coach uses crutches, so please no stairs. The driver needs his own room. We might stay two nights. Ngiyabonga, Thandeka",
+   "status": "PASS",
+   "source": "meta",
+   "model": "muse-spark-1.3",
+   "id_": "chatcmpl-01a19bf0-7725-7760-9adf-a534a9c388cc",
+   "latencyMs": 3172,
+   "output": {
+    "value": {
+     "evidence": [
+      {
+       "key": "checkIn",
+       "quote": "coming the Friday after next",
+       "status": "stated"
+      },
+      {
+       "key": "totalGuests",
+       "quote": "We have 12 netball girls, two coaches and the bus driver",
+       "status": "contradicted"
+      },
+      {
+       "key": "adults",
+       "quote": "two coaches and the bus driver",
+       "status": "contradicted"
+      },
+      {
+       "key": "privateRoom",
+       "quote": "The driver needs his own room.",
+       "status": "stated"
+      },
+      {
+       "key": "accessNeed",
+       "quote": "please no stairs",
+       "status": "stated"
+      }
+     ]
+    },
+    "usage": {
+     "promptTokens": 347,
+     "completionTokens": 540,
+     "reasoningTokens": 396
+    }
+   },
+   "capturedIn": "Stage 6 (2 Nov 2026)"
+  }
+ ]
+}

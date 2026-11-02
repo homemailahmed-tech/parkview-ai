@@ -1,0 +1,516 @@
+{
+  "mode": "LIVE (https://api.meta.ai/v1) — Stage 6 Evidence Trail",
+  "today": "2 Nov 2026",
+  "caps": {
+    "file": "/home/user/meta-hospitality-ai/docs/competition/video-tools/live-stage6-ledger.json",
+    "maxCalls": 5,
+    "maxUSD": 0.03,
+    "maxByKind": {
+      "chat": 5,
+      "voice": 0
+    }
+  },
+  "rows": [
+    {
+      "id": "E-H-3",
+      "kind": "evidence",
+      "at": "2026-11-02T11:06:22.745Z",
+      "input": "Goeie môre! Ons is 'n gesin van vyf – twee volwassenes en drie kinders – plus my ouma wat nie trappe kan klim nie. Kan ons vir 'n week bly vanaf 14 Desember? Selfsorg sou lekker wees. Dankie, Annelie",
+      "status": "DONE",
+      "source": "meta",
+      "model": "muse-spark-1.3",
+      "id_": "chatcmpl-01a19bf0-5a52-70c5-9fbe-c3e7433a8737",
+      "latencyMs": 3759,
+      "output": {
+        "value": {
+          "evidence": [
+            {
+              "key": "checkIn",
+              "quote": "vanaf 14 Desember",
+              "status": "stated"
+            },
+            {
+              "key": "checkOut",
+              "quote": null,
+              "status": "not_stated"
+            },
+            {
+              "key": "nights",
+              "quote": "vir 'n week bly",
+              "status": "stated"
+            },
+            {
+              "key": "totalGuests",
+              "quote": null,
+              "status": "not_stated"
+            },
+            {
+              "key": "adults",
+              "quote": "twee volwassenes",
+              "status": "contradicted"
+            },
+            {
+              "key": "children",
+              "quote": "drie kinders",
+              "status": "stated"
+            },
+            {
+              "key": "accessNeed",
+              "quote": "wat nie trappe kan klim nie",
+              "status": "stated"
+            },
+            {
+              "key": "selfCatering",
+              "quote": "Selfsorg sou lekker wees",
+              "status": "stated"
+            }
+          ]
+        },
+        "usage": {
+          "promptTokens": 395,
+          "completionTokens": 610,
+          "reasoningTokens": 408
+        }
+      },
+      "facts": [
+        {
+          "key": "checkIn",
+          "label": "Check-in",
+          "kind": "date",
+          "value": "2026-12-14",
+          "origin": "ai"
+        },
+        {
+          "key": "checkOut",
+          "label": "Check-out",
+          "kind": "date",
+          "value": "2026-12-21",
+          "origin": "ai"
+        },
+        {
+          "key": "nights",
+          "label": "Nights",
+          "kind": "count",
+          "value": 7,
+          "origin": "ai"
+        },
+        {
+          "key": "totalGuests",
+          "label": "Guests in the parties",
+          "kind": "count",
+          "value": 6,
+          "origin": "app"
+        },
+        {
+          "key": "adults",
+          "label": "Adults",
+          "kind": "count",
+          "value": 3,
+          "origin": "ai"
+        },
+        {
+          "key": "children",
+          "label": "Children",
+          "kind": "count",
+          "value": 3,
+          "origin": "ai"
+        },
+        {
+          "key": "accessNeed",
+          "label": "Needs ground floor / no stairs",
+          "kind": "count",
+          "value": 1,
+          "origin": "ai"
+        },
+        {
+          "key": "selfCatering",
+          "label": "Self-catering",
+          "kind": "flag",
+          "value": true,
+          "origin": "ai"
+        }
+      ],
+      "stage5Extraction": "chatcmpl-01a196fc-7003-77ab-961e-885b471c73e6",
+      "verdicts": [
+        {
+          "key": "checkIn",
+          "value": "2026-12-14",
+          "verdict": "supported",
+          "quote": "vanaf 14 Desember",
+          "reason": "The guest's words state this day and month"
+        },
+        {
+          "key": "checkOut",
+          "value": "2026-12-21",
+          "verdict": "unsupported",
+          "reason": "No words in the message state this"
+        },
+        {
+          "key": "nights",
+          "value": 7,
+          "verdict": "uncertain",
+          "quote": "vir 'n week bly",
+          "reason": "The guest wrote “a week”; read as 7 nights — confirm"
+        },
+        {
+          "key": "totalGuests",
+          "value": 6,
+          "verdict": "unsupported",
+          "reason": "No words in the message state this"
+        },
+        {
+          "key": "adults",
+          "value": 3,
+          "verdict": "unsupported",
+          "quote": "twee volwassenes",
+          "reason": "The guest's words say 2 — not 3"
+        },
+        {
+          "key": "children",
+          "value": 3,
+          "verdict": "supported",
+          "quote": "drie kinders",
+          "reason": "The guest's words state 3"
+        },
+        {
+          "key": "accessNeed",
+          "value": 1,
+          "verdict": "supported",
+          "quote": "wat nie trappe kan klim nie",
+          "reason": "The quoted words refer to one person"
+        },
+        {
+          "key": "selfCatering",
+          "value": true,
+          "verdict": "supported",
+          "quote": "Selfsorg sou lekker wees",
+          "reason": "The guest's words ask for this"
+        }
+      ],
+      "discarded": 0,
+      "checks": {
+        "a_allQuotesInMessage": true,
+        "truthStated": "4/4",
+        "notStatedFlagged": true,
+        "c_noHeadcountConfirmed": true
+      }
+    },
+    {
+      "id": "E-H-2",
+      "kind": "evidence",
+      "at": "2026-11-02T11:06:26.958Z",
+      "input": "Hi there 👋 it's Mpho from the choir. Change of plans from what I said yesterday: not 14 anymore, now 16 of us. The 4 married couples still want to share a bed, everyone else separate beds pls. And make it 3 nights instead of 2, arriving 21 Nov. Oh and gogo is coming too, she can't do stairs.",
+      "status": "DONE",
+      "source": "meta",
+      "model": "muse-spark-1.3",
+      "id_": "chatcmpl-01a19bf0-6acc-72e0-b353-befd906b02ae",
+      "latencyMs": 4206,
+      "output": {
+        "value": {
+          "evidence": [
+            {
+              "key": "checkIn",
+              "quote": "arriving 21 Nov.",
+              "status": "stated"
+            },
+            {
+              "key": "checkOut",
+              "quote": null,
+              "status": "not_stated"
+            },
+            {
+              "key": "nights",
+              "quote": "make it 3 nights instead of 2,",
+              "status": "corrected"
+            },
+            {
+              "key": "totalGuests",
+              "quote": "now 16 of us.",
+              "status": "contradicted"
+            },
+            {
+              "key": "adults",
+              "quote": null,
+              "status": "not_stated"
+            },
+            {
+              "key": "couples",
+              "quote": "The 4 married couples still want to share a bed,",
+              "status": "stated"
+            },
+            {
+              "key": "accessNeed",
+              "quote": "she can't do stairs.",
+              "status": "stated"
+            },
+            {
+              "key": "separateBeds",
+              "quote": "everyone else separate beds pls.",
+              "status": "stated"
+            }
+          ]
+        },
+        "usage": {
+          "promptTokens": 413,
+          "completionTokens": 561,
+          "reasoningTokens": 353
+        }
+      },
+      "facts": [
+        {
+          "key": "checkIn",
+          "label": "Check-in",
+          "kind": "date",
+          "value": "2026-11-21",
+          "origin": "ai"
+        },
+        {
+          "key": "checkOut",
+          "label": "Check-out",
+          "kind": "date",
+          "value": "2026-11-24",
+          "origin": "ai"
+        },
+        {
+          "key": "nights",
+          "label": "Nights",
+          "kind": "count",
+          "value": 3,
+          "origin": "ai"
+        },
+        {
+          "key": "totalGuests",
+          "label": "Guests in the parties",
+          "kind": "count",
+          "value": 8,
+          "origin": "app"
+        },
+        {
+          "key": "adults",
+          "label": "Adults",
+          "kind": "count",
+          "value": 8,
+          "origin": "ai"
+        },
+        {
+          "key": "couples",
+          "label": "Couples sharing a bed",
+          "kind": "count",
+          "value": 4,
+          "origin": "ai"
+        },
+        {
+          "key": "accessNeed",
+          "label": "Needs ground floor / no stairs",
+          "kind": "count",
+          "value": 1,
+          "origin": "ai"
+        },
+        {
+          "key": "separateBeds",
+          "label": "Separate beds",
+          "kind": "flag",
+          "value": true,
+          "origin": "ai"
+        }
+      ],
+      "stage5Extraction": "chatcmpl-01a196fd-0d9a-7566-8573-6b706b1d2621",
+      "verdicts": [
+        {
+          "key": "checkIn",
+          "value": "2026-11-21",
+          "verdict": "supported",
+          "quote": "arriving 21 Nov.",
+          "reason": "The guest's words state this day and month"
+        },
+        {
+          "key": "checkOut",
+          "value": "2026-11-24",
+          "verdict": "unsupported",
+          "reason": "No words in the message state this"
+        },
+        {
+          "key": "nights",
+          "value": 3,
+          "verdict": "supported",
+          "quote": "make it 3 nights instead of 2,",
+          "reason": "Corrected by the guest to 3 (the later value)"
+        },
+        {
+          "key": "totalGuests",
+          "value": 8,
+          "verdict": "conflict",
+          "quote": "now 16 of us.",
+          "reason": "The guest's words mention 16 people — the parties hold only 8"
+        },
+        {
+          "key": "adults",
+          "value": 8,
+          "verdict": "unsupported",
+          "reason": "No words in the message state this"
+        },
+        {
+          "key": "couples",
+          "value": 4,
+          "verdict": "supported",
+          "quote": "The 4 married couples still want to share a bed,",
+          "reason": "The guest's words state 4"
+        },
+        {
+          "key": "accessNeed",
+          "value": 1,
+          "verdict": "supported",
+          "quote": "she can't do stairs.",
+          "reason": "The quoted words refer to one person"
+        },
+        {
+          "key": "separateBeds",
+          "value": true,
+          "verdict": "supported",
+          "quote": "everyone else separate beds pls.",
+          "reason": "The guest's words ask for this"
+        }
+      ],
+      "discarded": 0,
+      "checks": {
+        "a_allQuotesInMessage": true,
+        "truthStated": "5/5",
+        "notStatedFlagged": true,
+        "c_noHeadcountConfirmed": true
+      }
+    },
+    {
+      "id": "E-H-1",
+      "kind": "evidence",
+      "at": "2026-11-02T11:06:30.137Z",
+      "input": "Sawubona! We have 12 netball girls, two coaches and the bus driver coming the Friday after next. One coach uses crutches, so please no stairs. The driver needs his own room. We might stay two nights. Ngiyabonga, Thandeka",
+      "status": "DONE",
+      "source": "meta",
+      "model": "muse-spark-1.3",
+      "id_": "chatcmpl-01a19bf0-7725-7760-9adf-a534a9c388cc",
+      "latencyMs": 3172,
+      "output": {
+        "value": {
+          "evidence": [
+            {
+              "key": "checkIn",
+              "quote": "coming the Friday after next",
+              "status": "stated"
+            },
+            {
+              "key": "totalGuests",
+              "quote": "We have 12 netball girls, two coaches and the bus driver",
+              "status": "contradicted"
+            },
+            {
+              "key": "adults",
+              "quote": "two coaches and the bus driver",
+              "status": "contradicted"
+            },
+            {
+              "key": "privateRoom",
+              "quote": "The driver needs his own room.",
+              "status": "stated"
+            },
+            {
+              "key": "accessNeed",
+              "quote": "please no stairs",
+              "status": "stated"
+            }
+          ]
+        },
+        "usage": {
+          "promptTokens": 347,
+          "completionTokens": 540,
+          "reasoningTokens": 396
+        }
+      },
+      "facts": [
+        {
+          "key": "checkIn",
+          "label": "Check-in",
+          "kind": "date",
+          "value": "2026-11-13",
+          "origin": "ai"
+        },
+        {
+          "key": "totalGuests",
+          "label": "Guests in the parties",
+          "kind": "count",
+          "value": 1,
+          "origin": "app"
+        },
+        {
+          "key": "adults",
+          "label": "Adults",
+          "kind": "count",
+          "value": 1,
+          "origin": "ai"
+        },
+        {
+          "key": "privateRoom",
+          "label": "Own room (driver / leader)",
+          "kind": "count",
+          "value": 1,
+          "origin": "app"
+        },
+        {
+          "key": "accessNeed",
+          "label": "Needs ground floor / no stairs",
+          "kind": "count",
+          "value": 1,
+          "origin": "ai"
+        }
+      ],
+      "stage5Extraction": "chatcmpl-01a196fd-960a-77ac-ac99-76ab04e5a67a",
+      "verdicts": [
+        {
+          "key": "checkIn",
+          "value": "2026-11-13",
+          "verdict": "uncertain",
+          "quote": "coming the Friday after next",
+          "reason": "A relative date (“next…”); the app worked out the calendar date — confirm"
+        },
+        {
+          "key": "totalGuests",
+          "value": 1,
+          "verdict": "conflict",
+          "quote": "We have 12 netball girls, two coaches and the bus driver",
+          "reason": "The guest's words mention 12 people — the parties hold only 1"
+        },
+        {
+          "key": "adults",
+          "value": 1,
+          "verdict": "unsupported",
+          "quote": "two coaches and the bus driver",
+          "reason": "The guest's words say 2 — not 1"
+        },
+        {
+          "key": "privateRoom",
+          "value": 1,
+          "verdict": "supported",
+          "quote": "The driver needs his own room.",
+          "reason": "The quoted words refer to one person"
+        },
+        {
+          "key": "accessNeed",
+          "value": 1,
+          "verdict": "supported",
+          "quote": "please no stairs",
+          "reason": "The quoted words refer to one person"
+        }
+      ],
+      "discarded": 0,
+      "checks": {
+        "a_allQuotesInMessage": true,
+        "truthStated": "2/2",
+        "notStatedFlagged": true,
+        "c_noHeadcountConfirmed": true
+      }
+    }
+  ],
+  "summary": {
+    "coverage": "11/11",
+    "d_coverage80": true
+  }
+}
