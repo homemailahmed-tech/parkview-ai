@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { AIProviderError } from "./errors";
-import type { ClarifyInput, ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, InterpretContext, LiveCallMeta, ProviderInfo } from "./types";
+import type { ClarifyInput, ConciergeInput, EvidenceInput, DraftInput, ExplainInput, HospitalityAIProvider, InterpretContext, LiveCallMeta, ProviderInfo } from "./types";
 
 /**
  * REPLAY MODE (demo/video only; AI_MODE=replay, AI_REPLAY_FILE=docs/evidence/stage4-live-evidence.json).
@@ -44,6 +44,9 @@ export class ReplayProvider implements HospitalityAIProvider {
   }
   async draftQuoteIntro(input: DraftInput): Promise<string> {
     return this.use(this.rows.find((r) => r.kind === "greeting" && input.guestName === "Lindiwe")).output.text;
+  }
+  async citeEvidence(input: EvidenceInput): Promise<unknown> {
+    return this.use(this.rows.find((r) => r.kind === "evidence" && r.input.trim() === input.message.trim())).output.value;
   }
   async interpretConciergeQuestion(_input: ConciergeInput): Promise<unknown> {
     return this.use(undefined);

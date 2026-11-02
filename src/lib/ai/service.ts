@@ -12,6 +12,7 @@ import { openQuestionsFrom, type OpenQuestion } from "../enquiry/openQuestions";
 import { transcribeWav, VOICE_MODEL, type TranscribeOptions } from "./voice";
 import { endpointTrust } from "./endpoint";
 import { validateConciergeIntent, type ConciergeIntent } from "../maps/concierge";
+import { verifyEvidence, type EvidenceFact, type EvidenceReport } from "./evidence";
 
 export type { AIEnv } from "./config";
 
@@ -171,6 +172,25 @@ export async function draftClarification(sel: ProviderSelection, input: ClarifyI
     };
   }
   return result;
+}
+
+export type EvidenceResult = { ok: true; result: AIResult<EvidenceReport> } | { ok: false; reason: string };
+
+/**
+ * Evidence Trail. Muse Spark cites the guest's words for each fact; verifyEvidence() decides.
+ * NEVER simulated: without a Meta provider (live or labelled replay) it says so and shows nothing.
+ */
+export async function citeEvidence(sel: ProviderSelection, message: string, facts: EvidenceFact[], opts: { countQuestionOpen?: boolean } = {}): Promise<EvidenceResult> {
+  const p = sel.primary;
+  if (p === sel.simulation || !p.citeEvidence) return { ok: false, reason: sel.configIssue ?? "The evidence check needs Meta AI (AI_MODE=meta-model-api, or a labelled replay). It is never simulated." };
+  if (sel.budget && !sel.budget.take()) return { ok: false, reason: "Daily live-call limit (AI_DAILY_CALL_LIMIT) reached" };
+  try {
+    const raw = await p.citeEvidence({ message, facts: facts.map((f) => ({ key: f.key, label: f.label, value: f.value })) });
+    const call = p instanceof MetaAIProvider || p instanceof ReplayProvider ? p.lastCall : undefined;
+    return { ok: true, result: { source: p.info.kind, provider: p.info.id, modelClass: p.info.modelClass, label: p.info.label, model: call?.servedModel ?? p.info.model, data: verifyEvidence(message, facts, raw, opts), call } };
+  } catch (e) {
+    return { ok: false, reason: p.info.kind === "replay" ? "No captured Meta response for this input (replay mode)" : `${p.info.label} call failed (${describeError(e)})` };
+  }
 }
 
 export async function interpretConcierge(sel: ProviderSelection, input: ConciergeInput): Promise<AIResult<ConciergeIntent>> {

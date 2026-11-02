@@ -2,7 +2,8 @@ import { chatCompletion, type ChatClientConfig } from "./chatClient";
 import type { LiveAIConfig } from "./config";
 import { AIProviderError } from "./errors";
 import { endpointTrust } from "./endpoint";
-import type { ClarifyInput, ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, InterpretContext, LiveCallMeta, ProviderInfo } from "./types";
+import type { ClarifyInput, ConciergeInput, DraftInput, ExplainInput, HospitalityAIProvider, InterpretContext, LiveCallMeta, ProviderInfo, EvidenceInput } from "./types";
+import { evidencePrompt, evidenceUserText, type EvidenceFact } from "./evidence";
 
 /**
  * Live model provider behind the switchboard, for:
@@ -108,6 +109,10 @@ export class MetaAIProvider implements HospitalityAIProvider {
     ].join("\n");
     const user = JSON.stringify({ guestName: input.guestName, questions: input.questions, guestMessage: input.guestMessage.slice(0, 1500) });
     return (await this.chat(system, user, false)).trim();
+  }
+
+  async citeEvidence(input: EvidenceInput): Promise<unknown> {
+    return parseJsonObject(await this.chat(evidencePrompt(), evidenceUserText(input.message, input.facts as EvidenceFact[]), true));
   }
 
   async interpretConciergeQuestion(input: ConciergeInput): Promise<unknown> {

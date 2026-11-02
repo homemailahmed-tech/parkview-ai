@@ -71,6 +71,12 @@ export interface ClarifyInput {
   guestMessage: string;
 }
 
+/** Evidence Trail: the guest's message and the booking facts to find evidence for (see ai/evidence.ts). */
+export interface EvidenceInput {
+  message: string;
+  facts: { key: string; label: string; value: number | boolean | string }[];
+}
+
 export interface ConciergeInput {
   question: string;
   categories: string[];
@@ -88,6 +94,8 @@ export interface HospitalityAIProvider {
   interpretConciergeQuestion(input: ConciergeInput): Promise<unknown>;
   /** A WhatsApp reply asking the guest ONLY the given questions. No prices, availability or promises. */
   draftClarification(input: ClarifyInput): Promise<string>;
+  /** Evidence Trail: raw JSON {evidence: [{key, quote, status}]} — verified by code, never trusted. Optional: never simulated. */
+  citeEvidence?(input: EvidenceInput): Promise<unknown>;
 }
 
 export interface AIResult<T> {

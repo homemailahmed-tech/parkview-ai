@@ -15,6 +15,8 @@ import { Badge, Button, Card, Notice, SourceTag, StatusPill, inputClass } from "
 import { PartyEditor } from "./PartyEditor";
 import { AllocationView } from "./AllocationView";
 import { QuotePanel } from "./QuotePanel";
+import { EvidenceView } from "./EvidenceView";
+import { evidenceFacts, evidenceQuestions, type EvidenceReport } from "@/lib/ai/evidence";
 
 export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: () => void }) {
   const { updateEnquiry, bookings, today, act, role } = useStore();
@@ -29,6 +31,9 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [answerSource, setAnswerSource] = useState<ConfirmationSource>("whatsapp");
   const [receivedBy, setReceivedBy] = useState("");
+  const [evidence, setEvidence] = useState<AIResult<EvidenceReport> | null>(null);
+  const [evidenceBusy, setEvidenceBusy] = useState(false);
+  const [evidenceNote, setEvidenceNote] = useState<string | null>(null);
 
   const editable = enquiry.status === "enquiry" || enquiry.status === "draft_quote";
   const request = enquiry.request;
@@ -55,6 +60,34 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
     }
   };
 
+  /** Evidence Trail: Muse Spark cites the guest's words for each fact; code verifies; unsupported facts become questions. */
+  const checkEvidence = async () => {
+    if (!request) return;
+    setEvidenceBusy(true);
+    setEvidenceNote(null);
+    try {
+      const message = enquiry.messages.filter((m) => m.from === "guest").map((m) => m.text).join("\n");
+      const facts = evidenceFacts(request, interp?.data.check.value ?? {});
+      const res = await fetch("/api/ai/evidence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, facts, countQuestionOpen: (enquiry.openQuestions ?? []).some((q) => q.topic === "count") }),
+      });
+      const body = await res.json();
+      if (!body.ok) throw new Error(body.reason ?? body.error ?? "Evidence check failed");
+      const result = body.result as AIResult<EvidenceReport>;
+      setEvidence(result);
+      const existing = enquiry.openQuestions ?? [];
+      const added = evidenceQuestions(result.data).filter((q) => !existing.some((x) => x.text === q.text));
+      if (added.length) updateEnquiry(enquiry.id, { openQuestions: [...existing, ...added] });
+    } catch (e) {
+      setEvidence(null);
+      setEvidenceNote((e as Error).message);
+    } finally {
+      setEvidenceBusy(false);
+    }
+  };
+
   const interpret = async () => {
     setBusy(true);
     setError(null);
@@ -75,6 +108,7 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
       });
       setResult(null);
       setClarify(null);
+      setEvidence(null);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -120,6 +154,7 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
   const setRequest = (r: StayRequest) => {
     updateEnquiry(enquiry.id, { request: r });
     setResult(null);
+    setEvidence(null);
   };
 
   const guests = useMemo(() => (request?.units ?? []).reduce((s, u: GuestUnit) => s + u.adults + u.children, 0), [request]);
@@ -246,6 +281,13 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
               {(interp.data.check.value.notes ?? []).length > 0 && (
                 <div className="flex flex-wrap gap-1">{interp.data.check.value.notes!.map((n) => <Badge key={n}>{n}</Badge>)}</div>
               )}
+            </div>
+          )}
+          {request && (request.units.length > 0 || request.checkIn) && (
+            <div className="mb-3 space-y-2">
+              <Button variant="secondary" onClick={checkEvidence} disabled={evidenceBusy}>{evidenceBusy ? "Finding evidence…" : "🔎 Show evidence"}</Button>
+              {evidenceNote && <Notice tone="blue">{evidenceNote}</Notice>}
+              {evidence && <EvidenceView message={enquiry.messages.filter((m) => m.from === "guest").map((m) => m.text).join("\n")} result={evidence} />}
             </div>
           )}
           {!interp && enquiry.interpretedBy && <div className="mb-3"><SourceTag source={enquiry.interpretedBy} /></div>}
