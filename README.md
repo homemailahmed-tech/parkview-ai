@@ -43,6 +43,16 @@ AI_MODE=meta-model-api META_MODEL_API_KEY=… AI_JSON_MODE=prompt npm run dev
 
 Try **Enquiries → + New enquiry → Hard 1 → ➤ → Read with AI → Draft question to guest**. Then use **Lindiwe → Find room options → Use Option A → Submit for owner approval**.
 
+**Judge quick start: genuine Meta responses without an API key.** Replay mode serves responses recorded from Meta's API during the approved live test runs (1–2 Nov 2026), unchanged, for the same three hard enquiries. No key, no network calls to Meta, no cost:
+```bash
+npm ci
+AI_MODE=replay AI_REPLAY_FILE=docs/evidence/stage6-replay.json npm run dev    # http://localhost:3000
+```
+Then **Enquiries → + New enquiry → Hard 2 → ➤ → Read with AI → 🔎 Show evidence**. Hard 2 is the choir: the Evidence Trail highlights the guest's own words, and "Guests in the parties: 8" conflicts with "now 16 of us". **Hard 1** (netball) and **Hard 3** (Afrikaans) work the same way; on Hard 1, **Draft question to guest** also replays the recorded reply.
+- Every replayed output is labelled **▶ REPLAY · genuine Meta response captured … · not a live call**.
+- Anything without a recorded response falls back to the labelled rule-based **SIMULATION**. The Evidence Trail is never simulated.
+- Response IDs, tokens and costs are listed in [`docs/LIVE_META_VERIFICATION.md`](docs/LIVE_META_VERIFICATION.md).
+
 **Full evidence matrix** (Meta live / deterministic / simulation / not built): [`docs/CAPABILITIES.md`](docs/CAPABILITIES.md).
 
 **Safety architecture:**
@@ -233,3 +243,7 @@ Also built in:
 - tests that fail if browser code reads environment variables or if real guest-house references appear
 
 Demo state lives in each visitor's own browser. There is no shared database, so nothing one visitor does affects another.
+
+## Licence
+
+[MIT](LICENSE) © 2026 Ahmed Dadabhay. Third-party packages keep their own licences (installed by npm). Map data © OpenStreetMap contributors.
