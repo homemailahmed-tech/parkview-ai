@@ -216,6 +216,8 @@ const PEOPLE = "adults?|people|persons?|guests?|pax|players?|members?|learners?|
  */
 /** Words that mark a later statement as replacing an earlier one ("Sorry, correction: …", "not 14 anymore, now 16"). */
 const CORRECTION_CUE = /\b(correction|correct(?:ed)? that|actually|instead|anymore|any more|no longer|change of plans?|update[ds]?|we are now|now we are|make it|rather|eintlik|regstelling|verander)\b/i;
+/** Words that ADD people to what was said before ("Actually, we also have 2 kids"). They win over a correction cue. */
+const ADDITION_CUE = /\b(also|as well|too|plus|in addition|additionally|another|extra|ook|nog)\b/i;
 
 export interface HeadcountAnalysis {
   /** People counted from the message, applying explicit corrections; undefined if no "number + people-word" appears. */
@@ -229,7 +231,8 @@ export interface HeadcountAnalysis {
 /**
  * Deterministic head-count reading of the guest's own words, message by message and sentence by sentence.
  * - Different groups add up ("12 players and 2 coaches" = 14); a repeated mention counts once.
- * - A sentence with a correction cue REPLACES the earlier counts (it is not added to them).
+ * - A sentence with a correction cue REPLACES the earlier counts (it is not added to them), unless it also says
+ *   "also / as well / plus / too / another …", in which case it ADDS to them.
  * - Different numbers for the same kind of person without a correction are a CONFLICT to ask about, never summed silently.
  */
 export function headcountAnalysis(text: string): HeadcountAnalysis {
@@ -241,7 +244,7 @@ export function headcountAnalysis(text: string): HeadcountAnalysis {
   for (const seg of segments) {
     const found = [...seg.matchAll(re)].map((m) => ({ n: Number(m[1]), kind: m[2].toLowerCase().replace(/(es|s)$/, "") })).filter((x) => x.n > 0 && x.n <= 200);
     if (!found.length) continue;
-    if (CORRECTION_CUE.test(seg)) {
+    if (CORRECTION_CUE.test(seg) && !ADDITION_CUE.test(seg)) {
       window = new Map();
       corrected = true;
     }

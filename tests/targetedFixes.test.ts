@@ -67,6 +67,16 @@ describe("Fix 1 · corrected guest counts replace earlier ones", () => {
     expect(headcountAnalysis("arriving 11 December for 3 nights").total).toBeUndefined();
   });
 
+  it("additions are not mistaken for corrections ('Actually, we also have 2 kids' adds, it does not replace)", async () => {
+    expect(headcountAnalysis("We are 2 adults.\nActually, we also have 2 kids.")).toMatchObject({ total: 4, corrected: false, conflicts: [] });
+    expect(headcountAnalysis("We are 10 adults. Plus 2 drivers as well.").total).toBe(12);
+    // A plain correction still replaces.
+    expect(headcountAnalysis(CASE_B).total).toBe(5);
+    // And the undercount guard still fires when a reading misses the added people.
+    const r = await interpretEnquiry(sel('{"adults":2,"checkIn":"2025-12-27","checkOut":"2025-12-30"}'), "We are 2 adults, 27 to 30 December.\nActually, we also have 2 kids.", ctx);
+    expect(r.data.check.missing.join(" ")).toMatch(/mentions 4 people but the interpretation has 2/);
+  });
+
   it("never invents ages or sharing: the guard only asks, it does not change the parties", async () => {
     const r = await interpretEnquiry(sel(LIVE_B), CASE_B, ctx);
     expect(r.data.units).toEqual(unitsFromExtraction({ adults: 2, children: 3, families: [{ adults: 2, children: 3 }], checkIn: "2025-12-27", checkOut: "2025-12-30", nights: 3, notes: ["requests two rooms"] }, "Guest"));
