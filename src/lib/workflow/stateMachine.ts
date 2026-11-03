@@ -123,6 +123,7 @@ export function quoteStaleReasons(enquiry: Enquiry): string[] {
   const r = enquiry.request;
   if (!r) return ["the enquiry has no current booking requirements"];
   const out: string[] = [];
+  if (r.exclusiveUse) out.push(`the guest requested exclusive use (${r.exclusiveUse === "unspecified" ? "package not yet confirmed" : r.exclusiveUse}); a room-by-room quote is not an exclusive-use booking, and package pricing is not configured`);
   if (r.checkIn !== q.checkIn || r.checkOut !== q.checkOut) out.push(`dates changed (quote ${q.checkIn} → ${q.checkOut}, now ${r.checkIn} → ${r.checkOut})`);
   const now = guestsIn(r.units), quoted = guestsIn(q.units);
   if (now !== quoted) out.push(`guest count changed (quote for ${quoted}, parties now ${now})`);

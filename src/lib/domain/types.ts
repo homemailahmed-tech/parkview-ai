@@ -96,6 +96,11 @@ export interface StayRequest {
   units: GuestUnit[];
   /** The guest asked for self-catering (checked after allocation; never assumed met). */
   selfCatering?: boolean;
+  /**
+   * Exclusive use requested (see enquiry/exclusiveUse): "unspecified" until the guest says Main House or Whole Property.
+   * While set, the engine never offers ordinary rooms and room quotes cannot be submitted, approved, sent or confirmed.
+   */
+  exclusiveUse?: "unspecified" | "main-house" | "whole-property";
 }
 
 export interface RoomAssignment {

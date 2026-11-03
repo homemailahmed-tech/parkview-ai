@@ -99,7 +99,7 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
       const r = body as AIResult<InterpretOutput>;
       setInterp(r);
       const v = r.data.check.value;
-      const next: StayRequest = { checkIn: v.checkIn ?? "", checkOut: v.checkOut ?? "", units: r.data.units, selfCatering: v.selfCatering };
+      const next: StayRequest = { checkIn: v.checkIn ?? "", checkOut: v.checkOut ?? "", units: r.data.units, selfCatering: v.selfCatering, ...(r.data.exclusiveUse ? { exclusiveUse: r.data.exclusiveUse } : {}) };
       updateEnquiry(enquiry.id, {
         request: next,
         openQuestions: r.data.openQuestions,
@@ -209,7 +209,7 @@ export function EnquiryDetail({ enquiry, onBack }: { enquiry: Enquiry; onBack: (
                   const resolutions = enquiry.openQuestions!.filter((q) => (answers[q.text] ?? "").trim()).map((q) => ({ question: q.text, answer: answers[q.text], source: answerSource, confirmedBy: receivedBy }));
                   try {
                     const next = resolveOpenQuestions(enquiry, resolutions, role, new Date().toISOString());
-                    updateEnquiry(enquiry.id, { openQuestions: next.openQuestions, resolvedQuestions: next.resolvedQuestions, events: next.events });
+                    updateEnquiry(enquiry.id, { openQuestions: next.openQuestions, resolvedQuestions: next.resolvedQuestions, events: next.events, request: next.request });
                     setAnswers({});
                     setError(null);
                   } catch (e) {

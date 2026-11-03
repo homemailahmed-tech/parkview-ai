@@ -11,6 +11,7 @@ import type {
 import { addDays, isValidISODate, nightsBetween, rangesOverlap, toUTC } from "../domain/dates";
 import { nightlyRoomRate } from "../quote/pricing";
 import { planBeds, unitSize, type BedPlan } from "./beds";
+import { PACKAGE_LABEL, packageAvailability } from "../enquiry/exclusiveUse";
 
 export const MAX_NIGHTS = 30;
 export const MAX_UNIT_GUESTS = 30;
@@ -369,6 +370,21 @@ export function allocate(req: StayRequest, opts: AllocateOptions): AllocationRes
 
   const errors = validateStayRequest(req, opts.today);
   if (errors.length) return empty(errors);
+
+  // Exclusive use is binding: never substitute ordinary rooms; report package availability; never quote it here.
+  if (req.exclusiveUse) {
+    if (req.exclusiveUse === "unspecified") {
+      return empty(["Exclusive use requested: confirm with the guest whether they want the Main House (guest rooms only) or the Whole Property (including the apartment). Ordinary rooms are not offered for an exclusive-use request."]);
+    }
+    const pa = packageAvailability(opts.rooms, opts.bookings, req.exclusiveUse, req.checkIn, req.checkOut);
+    const label = PACKAGE_LABEL[req.exclusiveUse];
+    const guests = req.units.reduce((s, u) => s + unitSize(u), 0);
+    if (!pa.available) {
+      return empty([`${label} is NOT available for these dates: ${pa.blocked.map((r) => r.name).join(", ")} already booked or blocked. Existing bookings are never moved or cancelled. Offer other dates, or ordinary rooms only if the guest agrees to a non-exclusive stay.`]);
+    }
+    if (guests > pa.capacity) return empty([`${label} sleeps at most ${pa.capacity}; the guest parties hold ${guests}.`]);
+    return empty([`${label} is available for these dates (all ${pa.units} units free, sleeps up to ${pa.capacity}; the parties hold ${guests}). Package pricing is not configured in this prototype, so the app does not produce an exclusive-use quote: the owner prices and approves it. Ordinary rooms are not offered in its place.`], { availableRoomIds: availableRooms(opts.rooms, opts.bookings, req.checkIn, req.checkOut).map((r) => r.id) });
+  }
 
   const nights = nightsBetween(req.checkIn, req.checkOut);
   const rooms = availableRooms(opts.rooms, opts.bookings, req.checkIn, req.checkOut);

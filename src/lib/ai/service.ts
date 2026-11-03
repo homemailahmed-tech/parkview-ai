@@ -1,4 +1,4 @@
-import { validateExtraction, unitsFromExtraction, headcountMentioned, relativeDatePhrase, type ExtractionCheck } from "../enquiry/extraction";
+import { validateExtraction, unitsFromExtraction, headcountAnalysis, relativeDatePhrase, type ExtractionCheck } from "../enquiry/extraction";
 import type { GuestUnit } from "../domain/types";
 import { MetaAIProvider } from "./metaProvider";
 import { SimulationProvider } from "./simulationProvider";
@@ -13,6 +13,7 @@ import { transcribeWav, VOICE_MODEL, type TranscribeOptions } from "./voice";
 import { endpointTrust } from "./endpoint";
 import { validateConciergeIntent, type ConciergeIntent } from "../maps/concierge";
 import { verifyEvidence, type EvidenceFact, type EvidenceReport } from "./evidence";
+import { detectExclusiveUse, exclusiveQuestion, type ExclusiveRequest } from "../enquiry/exclusiveUse";
 
 export type { AIEnv } from "./config";
 
@@ -79,6 +80,8 @@ export interface InterpretOutput {
   units: GuestUnit[];
   /** Unconfirmed facts; while any are open the booking is provisional (see enquiry/openQuestions). */
   openQuestions: OpenQuestion[];
+  /** Exclusive use requested in the guest's words or the AI's notes (binding; see enquiry/exclusiveUse). */
+  exclusiveUse?: ExclusiveRequest;
 }
 
 export async function interpretEnquiry(sel: ProviderSelection, text: string, ctx: InterpretContext): Promise<AIResult<InterpretOutput>> {
@@ -87,10 +90,14 @@ export async function interpretEnquiry(sel: ProviderSelection, text: string, ctx
   // Deterministic validation of whatever the model returned.
   const check = validateExtraction(result.data);
   // Deterministic guard: never let an interpretation silently undercount the group in the message.
-  const mentioned = headcountMentioned(text);
+  // Corrections replace earlier counts; conflicting numbers without a correction are asked about, never summed.
+  const hc = headcountAnalysis(text);
   const interpreted = (check.value.adults ?? 0) + (check.value.children ?? 0);
-  if (mentioned !== undefined && mentioned > interpreted) {
-    check.missing.push(`guest count to confirm: the message mentions ${mentioned} people but the interpretation has ${interpreted}`);
+  for (const c of hc.conflicts) {
+    check.missing.push(`guest count to confirm: the guest gave different numbers for ${/(ren|ple|men|ff)$/.test(c.who) ? c.who : /(ch|sh)$/.test(c.who) ? `${c.who}es` : `${c.who}s`} (${c.values.join(" and ")}) without a clear correction`);
+  }
+  if (!hc.conflicts.length && hc.total !== undefined && hc.total > interpreted) {
+    check.missing.push(`guest count to confirm: the message mentions ${hc.total} people but the interpretation has ${interpreted}`);
   }
   // Deterministic guard: a relative date ("the Friday after next") must be confirmed with the guest.
   const rel = relativeDatePhrase(text);
@@ -100,7 +107,10 @@ export async function interpretEnquiry(sel: ProviderSelection, text: string, ctx
     check.missing.push(`dates: the guest wrote "${rel}" — ask for exact dates`);
   }
   const units = check.missing.includes("number of adults") ? [] : unitsFromExtraction(check.value, check.value.guestName ?? "Guest");
-  return { ...result, data: { check, units, openQuestions: openQuestionsFrom(check, text, units) } };
+  const openQuestions = openQuestionsFrom(check, text, units);
+  const exclusiveUse = detectExclusiveUse(text, check.value.notes ?? []);
+  if (exclusiveUse === "unspecified") openQuestions.push(exclusiveQuestion());
+  return { ...result, data: { check, units, openQuestions, exclusiveUse } };
 }
 
 /** Money wording: currency symbols, amounts or price terms. Guest and room counts are allowed. */

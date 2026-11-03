@@ -1,5 +1,6 @@
 import type { ExtractedEnquiry, ExtractionCheck } from "./extraction";
-import type { Actor, Enquiry, GuestUnit, OpenQuestion, QuestionTopic, WorkflowEvent } from "../domain/types";
+import type { Actor, Enquiry, GuestUnit, OpenQuestion, QuestionTopic, StayRequest, WorkflowEvent } from "../domain/types";
+import { EXCLUSIVE_QUESTION_PREFIX, packageFromAnswer } from "./exclusiveUse";
 
 export type { OpenQuestion, QuestionTopic };
 
@@ -138,6 +139,7 @@ export function resolveOpenQuestions(enquiry: Enquiry, resolutions: QuestionReso
   if (!resolutions.length) throw new ResolutionError("Enter the guest's answer to at least one question");
   const events: WorkflowEvent[] = [];
   const closed = new Set<string>();
+  let request: StayRequest | undefined = enquiry.request;
   for (const r of resolutions) {
     const q = open.find((o) => o.text === r.question);
     if (!q) throw new ResolutionError(`Not an open question: ${r.question}`);
@@ -157,11 +159,17 @@ export function resolveOpenQuestions(enquiry: Enquiry, resolutions: QuestionReso
       const kids = (enquiry.request?.units ?? []).reduce((s, u) => s + u.children, 0);
       if (kids > 0) throw new ResolutionError(`The guest says all are adults, but the guest parties include ${kids} child(ren). Update the parties first.`);
     }
+    if (q.text.startsWith(EXCLUSIVE_QUESTION_PREFIX)) {
+      const pkg = packageFromAnswer(answer);
+      if (!pkg) throw new ResolutionError("Record which option the guest chose: Main House, Whole Property, or not exclusive (separate rooms)");
+      if (request) request = { ...request, exclusiveUse: pkg === "none" ? undefined : pkg };
+    }
     closed.add(q.text);
     events.push({ at: now, actor, action: "resolve_question", from: enquiry.status, to: enquiry.status, note: `[${q.topic}] ${q.text} → guest confirmed: "${answer.slice(0, 200)}" (via ${r.source}, recorded by ${by.slice(0, 60)})` });
   }
   return {
     ...enquiry,
+    request,
     openQuestions: open.filter((o) => !closed.has(o.text)),
     resolvedQuestions: [...(enquiry.resolvedQuestions ?? []), ...resolutions.map((r) => ({ ...r, answer: r.answer.trim().slice(0, 200), confirmedBy: r.confirmedBy.trim().slice(0, 60), at: now, topic: open.find((o) => o.text === r.question)!.topic }))],
     events: [...enquiry.events, ...events],

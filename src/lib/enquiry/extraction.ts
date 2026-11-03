@@ -214,20 +214,54 @@ const PEOPLE = "adults?|people|persons?|guests?|pax|players?|members?|learners?|
  * and an identical repeated phrase is counted once,
  * which is the safe direction. Used to flag interpretations that undercount a group.
  */
-export function headcountMentioned(text: string): number | undefined {
-  // Repeated mentions of the same group ("2 coaches ... the 2 coaches") are counted once.
-  const seen = new Set<string>();
-  let sum = 0;
+/** Words that mark a later statement as replacing an earlier one ("Sorry, correction: …", "not 14 anymore, now 16"). */
+const CORRECTION_CUE = /\b(correction|correct(?:ed)? that|actually|instead|anymore|any more|no longer|change of plans?|update[ds]?|we are now|now we are|make it|rather|eintlik|regstelling|verander)\b/i;
+
+export interface HeadcountAnalysis {
+  /** People counted from the message, applying explicit corrections; undefined if no "number + people-word" appears. */
+  total?: number;
+  /** A later statement explicitly replaced earlier counts. */
+  corrected: boolean;
+  /** The same kind of person given different numbers WITHOUT a clear correction (e.g. "2 children" then "3 children"). */
+  conflicts: { who: string; values: number[] }[];
+}
+
+/**
+ * Deterministic head-count reading of the guest's own words, message by message and sentence by sentence.
+ * - Different groups add up ("12 players and 2 coaches" = 14); a repeated mention counts once.
+ * - A sentence with a correction cue REPLACES the earlier counts (it is not added to them).
+ * - Different numbers for the same kind of person without a correction are a CONFLICT to ask about, never summed silently.
+ */
+export function headcountAnalysis(text: string): HeadcountAnalysis {
   const re = new RegExp(`\\b(\\d{1,3})\\s+(?:[a-z-]+\\s+)?(${PEOPLE})\\b`, "gi");
-  for (const m of text.matchAll(re)) {
-    const n = Number(m[1]);
-    const key = `${n} ${m[2].toLowerCase().replace(/(es|s)$/, "")}`;
-    if (n > 0 && n <= 200 && !seen.has(key)) {
-      seen.add(key);
-      sum += n;
+  const segments = text.split(/\n+|(?<=[.!?])\s+/).filter((x) => x.trim());
+  let window = new Map<string, number>(); // "n kind" -> n (dedupe repeated mentions)
+  let corrected = false;
+  const conflicts = new Map<string, Set<number>>();
+  for (const seg of segments) {
+    const found = [...seg.matchAll(re)].map((m) => ({ n: Number(m[1]), kind: m[2].toLowerCase().replace(/(es|s)$/, "") })).filter((x) => x.n > 0 && x.n <= 200);
+    if (!found.length) continue;
+    if (CORRECTION_CUE.test(seg)) {
+      window = new Map();
+      corrected = true;
+    }
+    for (const f of found) {
+      const sameKind = [...window.keys()].filter((k) => k.endsWith(` ${f.kind}`)).map((k) => window.get(k)!);
+      if (sameKind.length && !sameKind.includes(f.n)) {
+        const set = conflicts.get(f.kind) ?? new Set(sameKind);
+        set.add(f.n);
+        conflicts.set(f.kind, set);
+      }
+      window.set(`${f.n} ${f.kind}`, f.n);
     }
   }
-  return seen.size ? sum : undefined;
+  const total = window.size ? [...window.values()].reduce((a, n) => a + n, 0) : undefined;
+  return { total, corrected, conflicts: [...conflicts].map(([who, v]) => ({ who, values: [...v] })) };
+}
+
+/** People mentioned in the message (corrections applied; see headcountAnalysis). */
+export function headcountMentioned(text: string): number | undefined {
+  return headcountAnalysis(text).total;
 }
 
 const RELATIVE_DATE = /\b(today|tonight|tomorrow|next (?:week|weekend|month|mon|tues|wednes|thurs|fri|satur|sun)\w*|(?:mon|tues|wednes|thurs|fri|satur|sun)day after next|after next|this (?:coming )?(?:week|weekend|mon|tues|wednes|thurs|fri|satur|sun)\w*|in (?:a|one|two|three|\d+) (?:days?|weeks?)|volgende (?:week|naweek|maand|\w+dag)|oormôre)\b/i;
